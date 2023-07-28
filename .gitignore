@@ -1,0 +1,8 @@
+*.pyc
+build/
+dist/
+gauge_api_steps.egg-info/
+.vscode
+.idea/
+*.iml
+.DS_Store

@@ -1,0 +1,4 @@
+getgauge
+jsonpath-ng
+lxml>=4.9.2
+numexpr>=2.8.1
