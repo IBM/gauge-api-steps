@@ -11,6 +11,7 @@ setup(
     version='0.9',
     description='Provides steps for a Gauge project, that runs tests against APIs',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/IBM/gauge-api-steps',
     author='Tobias Lehmann',
     author_email='derdualist1@gmail.com',

@@ -262,8 +262,10 @@ def _open(req: Request) -> Response:
 
 def _find_jsonpath_match_in_response(jsonpath: str) -> Any:
     matches = _find_jsonpath_matches_in_response(jsonpath)
-    assert len(matches) > 0, f"Assertion failed: No value found at {jsonpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
-    assert len(matches) == 1, f"Assertion failed: multiple matches for {jsonpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
+    assert len(matches) > 0, \
+        f"Assertion failed: No value found at {jsonpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
+    assert len(matches) == 1, \
+        f"Assertion failed: multiple matches for {jsonpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
     return matches[0].value
 
 
@@ -278,8 +280,10 @@ def _find_jsonpath_matches_in_response(jsonpath: str) -> Iterable[Any]:
 
 def _find_xpath_match_in_response(xpath: str) -> etree._Element | str | int | float:
     matches = _find_xpath_matches_in_response(xpath)
-    assert len(matches) > 0, f"Assertion failed: No value found at {xpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
-    assert len(matches) == 1, f"Assertion failed: multiple matches for {xpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
+    assert len(matches) > 0, \
+        f"Assertion failed: No value found at {xpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
+    assert len(matches) == 1, \
+        f"Assertion failed: multiple matches for {xpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
     return matches[0]
 
 
