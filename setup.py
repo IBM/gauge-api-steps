@@ -5,6 +5,7 @@ from setuptools import setup
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
+    long_description = long_description.replace('./docs/', 'https://github.com/IBM/gauge-api-steps/tree/master/docs/')
 
 setup(
     name='gauge-api-steps',
