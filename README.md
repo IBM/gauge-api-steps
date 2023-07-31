@@ -33,7 +33,7 @@ It is useful to understand the basic workings of Gauge first. The [documentation
   echo $( python -m site --user-site )/gauge_api_steps
   ```
 * Add that path to the property `STEP_IMPL_DIR` inside the test project file `env/default/python.properties`. Paths to multiple modules are comma separated.\
-Example on a Mac:
+  Example on a Mac:
   ```
   STEP_IMPL_DIR = /Users/<user>/Library/Python/3.10/lib/python/site-packages/gauge_api_steps, step_impl
   ```

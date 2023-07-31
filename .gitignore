@@ -2,6 +2,8 @@
 build/
 dist/
 gauge_api_steps.egg-info/
+.ruff_cache/
+.coverage
 .vscode
 .idea/
 *.iml
