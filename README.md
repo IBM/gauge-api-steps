@@ -23,7 +23,7 @@ Find the documentation on all Gauge steps of this project in the overview:
 This is a library for the Gauge framework, so Gauge+Python must be installed first.
 
 * Install Python >= 3.10 on your platform and make it available in the \$PATH
-* Install [Gauge](https://docs.gauge.org/getting_started/installing-gauge.html?language=python&ide=vscode) and [create a test projekt with Python](https://docs.gauge.org/getting_started/create-test-project.html?os=macos&language=python&ide=vscode)
+* Install [Gauge](https://docs.gauge.org/getting_started/installing-gauge.html?language=python&ide=vscode) and [create a test project with Python](https://docs.gauge.org/getting_started/create-test-project.html?os=macos&language=python&ide=vscode)
 
 It is useful to understand the basic workings of Gauge first. The [documentation](https://docs.gauge.org/?os=macos&language=python&ide=vscode) is excellent.
 
@@ -49,7 +49,7 @@ cd path/to/gauge-api-steps
 pip install --user .
 ```
 
-Or the latest package can (soon) be downloaded and installed from [PyPi](https://pypi.org):
+Or the latest package can be downloaded and installed from [PyPi](https://pypi.org/project/gauge-api-steps):
 
 ```shell
 pip install gauge-api-steps --user --upgrade
