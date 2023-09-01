@@ -9,6 +9,8 @@ on:
 jobs:
   upload:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
@@ -23,7 +25,4 @@ jobs:
       - name: Build package
         run: python setup.py sdist bdist_wheel
       - name: Publish package
-        run: python -m twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@v1.8.10
