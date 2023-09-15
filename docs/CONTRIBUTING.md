@@ -30,7 +30,8 @@ git rebase origin/dev
 ```
 
 Always commit with a [good commit message](https://cbea.ms/git-commit/), which starts with the Issue number.
-Include a sign-off statement, which can be done like so:
+Commits require a signature using GPG, SSH, or S/MIME. Read [about commit signature verification](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification).
+Also include a sign-off statement, which can be done like so:
 
 ```shell
 git commit -s
