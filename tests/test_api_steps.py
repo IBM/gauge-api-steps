@@ -20,7 +20,8 @@ class TestApiSteps(unittest.TestCase):
     def test_append(self):
         os.environ["GAUGE_PROJECT_ROOT"] = "./tests/out"
         out_file = "tests/out/output.csv"
-        os.remove(out_file)
+        if os.path.isfile(out_file):
+            os.remove(out_file)
         append_to_file(out_file, "a,b,c")
         append_to_file(out_file, "aa,bb,cc")
         with open(out_file) as f:
