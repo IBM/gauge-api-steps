@@ -304,7 +304,7 @@ def _find_xpath_matches_in_response(xpath: str) -> Iterable[etree._Element] | It
     root: etree._Element = tree.getroot()
     _clear_namespaces(root)
     match = root.xpath(xpath)
-    return match if type(match) is list else [match]
+    return match if isinstance(match, list) else [match]
 
 
 def _clear_namespaces(elem: etree._Element) -> None:
@@ -318,7 +318,7 @@ def _clear_namespaces(elem: etree._Element) -> None:
 def _eval_matches_length(matches: int, expr: str) -> None:
     full_expr = f"{matches}{expr}"
     result = numexpr.evaluate(full_expr).tolist()
-    assert type(result) is bool, f"'{full_expr} = {result}' is not a boolean expression"
+    assert isinstance(result, bool), f"'{full_expr} = {result}' is not a boolean expression"
     assert result is True, f"found {matches} matches, which is not {expr}"
 
 
