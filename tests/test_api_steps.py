@@ -1,7 +1,9 @@
+import inspect
 import os
 import unittest
 
 from getgauge.python import data_store
+from pathlib import Path
 from unittest.mock import Mock
 
 from gauge_api_steps.api_steps import opener_key, append_to_file, beforescenario
@@ -12,14 +14,16 @@ class TestApiSteps(unittest.TestCase):
     def setUp(self):
         data_store.scenario.clear()
         self.app_context = Mock()
+        self.test_dir = str(Path(inspect.getfile(self.__class__)).parent.absolute())
+        self.out = os.path.join(self.test_dir, "out")
 
     def test_beforescenario(self):
         beforescenario(self.app_context)
         self.assertIsNotNone(data_store.scenario[opener_key])
 
     def test_append(self):
-        os.environ["GAUGE_PROJECT_ROOT"] = "./tests/out"
-        out_file = "tests/out/output.csv"
+        os.environ["GAUGE_PROJECT_ROOT"] = self.test_dir
+        out_file = f"{self.out}/output.csv"
         if os.path.isfile(out_file):
             os.remove(out_file)
         append_to_file(out_file, "a,b,c")
