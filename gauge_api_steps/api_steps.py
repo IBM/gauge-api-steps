@@ -234,7 +234,7 @@ def assert_response_xpath_equals(xpath_param: str, xml_value_param: str) -> None
     value = _substitute(xml_value_param)
     match = _find_xpath_match_in_response(xpath)
     match_str: str
-    if type(match) is etree._Element:
+    if isinstance(match, etree._Element):
         value_xml = etree.XML(value)
         match_str = match.xpath("string(.)")
         equal = _xml_elements_equal(match, value_xml)
@@ -323,7 +323,7 @@ def _eval_matches_length(matches: int, expr: str) -> None:
 
 
 def _text_from_xml(match: etree._Element | str | int | float) -> str:
-    if (type(match)) is etree._Element:
+    if isinstance(match, etree._Element):
         return match.xpath('string(.)')
     else:
         return str(match)
