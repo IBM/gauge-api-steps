@@ -16,6 +16,8 @@ class TestApiSteps(unittest.TestCase):
         self.app_context = Mock()
         self.test_dir = str(Path(inspect.getfile(self.__class__)).parent.absolute())
         self.out = os.path.join(self.test_dir, "out")
+        if not os.path.exists(self.out):
+            os.mkdir(self.out)
 
     def test_beforescenario(self):
         beforescenario(self.app_context)
