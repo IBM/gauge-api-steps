@@ -68,6 +68,16 @@ def print_placeholders() -> None:
     _print_and_report(f"{data_store.scenario}")
 
 
+@step("Append to <file>: <value>")
+def append_to_file(file_param: str, value_param: str):
+    file_path = os.path.realpath(_substitute(file_param))
+    project_root = os.path.realpath(os.environ.get("GAUGE_PROJECT_ROOT"))
+    assert file_path.startswith(project_root), f"file must be inside {project_root}"
+    value = _substitute(value_param)
+    with open(file_path, 'a') as f:
+        f.write(f"{value}\n")
+
+
 @step("With header <header>: <value>")
 def add_header(header_param: str, value_param: str) -> None:
     header = _substitute(header_param)
