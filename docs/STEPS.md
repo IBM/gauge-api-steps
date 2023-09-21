@@ -68,7 +68,7 @@ This can be useful for debugging.
 
 > \* Append to "reports/users.csv": "\${user_name},\${user_phone}"
 
-Will write the value to the specified text file. The file must be located inside of the Gauge project.
+This writes the value to the specified text file. The file must be located inside of the Gauge project.
 The value is appended to the file, and does not overwrite it, even over multiple test runs.
 Each append ends with a newline '\n' character.
 
