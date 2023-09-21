@@ -10,6 +10,7 @@ The following Gauge steps are implemented in this module:
   - [Store \<key> \<value>](#Store-key-value)
   - [Print \<message>](#print-message)
   - [Print placeholders](#print-placeholders)
+  - [Append to \<file>: \<value>](#append-to-file-value)
   - [With header \<header>: \<value>](#with-header-header-value)
   - [With body \<body>](#with-body-body)
   - [Request \<method> \<url>](#request-method-url)
@@ -62,6 +63,14 @@ Prints the specified text in the terminal output and into the report.
 
 Prints the comprehensive list of placeholders in the terminal output and into the report. This includes every property in the used `*.env` files and the system properties.
 This can be useful for debugging.
+
+## Append to \<file>: \<value>
+
+> \* Append to "reports/users.csv": "\${user_name},\${user_phone}"
+
+This writes the value to the specified text file. The file must be located inside of the Gauge project.
+The value is appended to the file, and does not overwrite it, even over multiple test runs.
+Each append ends with a newline '\n' character.
 
 ## With header \<header>: \<value>
 

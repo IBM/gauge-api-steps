@@ -68,6 +68,16 @@ def print_placeholders() -> None:
     _print_and_report(f"{data_store.scenario}")
 
 
+@step("Append to <file>: <value>")
+def append_to_file(file_param: str, value_param: str):
+    file_path = os.path.realpath(_substitute(file_param))
+    project_root = os.path.realpath(os.environ.get("GAUGE_PROJECT_ROOT"))
+    assert file_path.startswith(project_root), f"file must be inside {project_root}"
+    value = _substitute(value_param)
+    with open(file_path, 'a') as f:
+        f.write(f"{value}\n")
+
+
 @step("With header <header>: <value>")
 def add_header(header_param: str, value_param: str) -> None:
     header = _substitute(header_param)
@@ -224,7 +234,7 @@ def assert_response_xpath_equals(xpath_param: str, xml_value_param: str) -> None
     value = _substitute(xml_value_param)
     match = _find_xpath_match_in_response(xpath)
     match_str: str
-    if type(match) is etree._Element:
+    if isinstance(match, etree._Element):
         value_xml = etree.XML(value)
         match_str = match.xpath("string(.)")
         equal = _xml_elements_equal(match, value_xml)
@@ -294,7 +304,7 @@ def _find_xpath_matches_in_response(xpath: str) -> Iterable[etree._Element] | It
     root: etree._Element = tree.getroot()
     _clear_namespaces(root)
     match = root.xpath(xpath)
-    return match if type(match) is list else [match]
+    return match if isinstance(match, list) else [match]
 
 
 def _clear_namespaces(elem: etree._Element) -> None:
@@ -308,12 +318,12 @@ def _clear_namespaces(elem: etree._Element) -> None:
 def _eval_matches_length(matches: int, expr: str) -> None:
     full_expr = f"{matches}{expr}"
     result = numexpr.evaluate(full_expr).tolist()
-    assert type(result) is bool, f"'{full_expr} = {result}' is not a boolean expression"
+    assert isinstance(result, bool), f"'{full_expr} = {result}' is not a boolean expression"
     assert result is True, f"found {matches} matches, which is not {expr}"
 
 
 def _text_from_xml(match: etree._Element | str | int | float) -> str:
-    if (type(match)) is etree._Element:
+    if isinstance(match, etree._Element):
         return match.xpath('string(.)')
     else:
         return str(match)

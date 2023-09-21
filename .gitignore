@@ -8,3 +8,4 @@ gauge_api_steps.egg-info/
 .idea/
 *.iml
 .DS_Store
+/tests/out/
