@@ -79,6 +79,13 @@ Following placeholders are used internally to store data over multiple steps:
 
 It is possible to access and manipulate them with certain steps.
 
+## Configuration
+
+The Configuration follows the [Gauge configuration](https://docs.gauge.org/configuration.html?os=linux&language=python&ide=vscode) approach.
+Some behaviour can be determined with properties.
+
+[Configuration Overview](./docs/CONFIG.md)
+
 ## Maintainers
 
 [Maintainers](./docs/MAINTAINERS.md)

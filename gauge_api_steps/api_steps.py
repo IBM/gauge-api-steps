@@ -52,7 +52,9 @@ def req_csrf_header(header_param: str) -> None:
 
 
 @step("Store <key> <value>")
-def store(key: str, value: str) -> None:
+def store(key_param: str, value_param: str) -> None:
+    key = _substitute(key_param)
+    value = _substitute(value_param)
     data_store.scenario[key] = value
 
 
@@ -64,8 +66,8 @@ def print_message(message_param: str) -> None:
 
 @step("Print placeholders")
 def print_placeholders() -> None:
-    _print_and_report(f"{os.environ}")
-    _print_and_report(f"{data_store.scenario}")
+    _print_and_report(f"Environment: \n{os.environ}")
+    _print_and_report(f"Data store: \n{data_store.scenario}")
 
 
 @step("Append to <file>: <value>")
@@ -251,7 +253,8 @@ def save_response_jsonpath(jsonpath_param: str, key_param: str) -> None:
     jsonpath = _substitute(jsonpath_param)
     key = _substitute(key_param)
     match = _find_jsonpath_match_in_response(jsonpath)
-    data_store.scenario[key] = match
+    match_str = json.dumps(match)
+    data_store.scenario[key] = match_str
 
 
 @step("Save xpath <xpath> as <key>")
@@ -259,7 +262,8 @@ def save_response_xpath(xpath_param: str, key_param: str) -> None:
     xpath = _substitute(xpath_param)
     key = _substitute(key_param)
     match = _find_xpath_match_in_response(xpath)
-    data_store.scenario[key] = match
+    match_primitive = match if not isinstance(match, etree._Element) else etree.tostring(match).decode('UTF-8')
+    data_store.scenario[key] = match_primitive
 
 
 def _open(req: Request) -> Response:
@@ -342,12 +346,16 @@ def _xml_elements_equal(e1: etree._Element, e2: etree._Element) -> bool:
 def _substitute(gauge_param: str) -> str:
     template = Template(gauge_param)
     #pipe operator does not work on windows
-    substituted = template.safe_substitute(os.environ)
-    template = Template(substituted)
     substituted = template.safe_substitute(data_store.scenario)
+    template = Template(substituted)
+    substituted = template.safe_substitute(os.environ)
     return substituted
 
 
 def _print_and_report(message: str) -> None:
+    replace_whitespace = os.environ.get("replace_whitespace_in_report")
+    if replace_whitespace is not None:
+        message = message.replace(' ', replace_whitespace)
+        message = message.replace('\t', replace_whitespace * 4)
     print(message)
     Messages.write_message(message.replace('<', '&lt;'))
