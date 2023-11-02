@@ -18,7 +18,7 @@ The following Gauge steps are implemented in this module:
   - [Assert header \<header>: \<value>](#assert-header-header-value)
   - [Assert jsonpath \<jsonpath> exists](#assert-jsonpath-jsonpath-exists)
   - [Assert xpath \<xpath> exists](#Assert-xpath-xpath-exists)
-  - [Assert jsonpath \<jsonpath> exists <expr>](#assert-jsonpath-jsonpath-exists-expr)
+  - [Assert jsonpath \<jsonpath> exists \<expr>](#assert-jsonpath-jsonpath-exists-expr)
   - [Assert xpath \<xpath> exists \<expr>](#assert-xpath-xpath-exists-expr)
   - [Assert jsonpath \<jsonpath> contains \<text>](#assert-jsonpath-jsonpath-contains-text)
   - [Assert xpath \<xpath> contains \<text>](#assert-xpath-xpath-contains-text)
