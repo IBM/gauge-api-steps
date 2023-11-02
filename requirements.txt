@@ -1,4 +1,4 @@
 getgauge
-jsonpath-ng
+jsonpath-ng==1.6.0
 lxml>=4.9.2
 numexpr>=2.8.1
