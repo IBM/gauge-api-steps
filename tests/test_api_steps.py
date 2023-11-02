@@ -1,4 +1,6 @@
+import contextlib
 import inspect
+import io
 import os
 import unittest
 
@@ -6,7 +8,7 @@ from getgauge.python import data_store
 from pathlib import Path
 from unittest.mock import Mock
 
-from gauge_api_steps.api_steps import opener_key, append_to_file, beforescenario, response_key, simulate_response
+from gauge_api_steps.api_steps import opener_key, append_to_file, beforescenario, pretty_print, response_key, simulate_response
 
 
 class TestApiSteps(unittest.TestCase):
@@ -43,3 +45,10 @@ class TestApiSteps(unittest.TestCase):
         os.environ["GAUGE_PROJECT_ROOT"] = "./tests/out"
         out_file = "tests/notvalid/output.csv"
         self.assertRaises(AssertionError, lambda: append_to_file(out_file, "a,b,c"))
+
+    def test_pretty_print(self):
+        with io.StringIO() as buf:
+            with contextlib.redirect_stdout(buf):
+                pretty_print('{"a":1,"b":2}')
+            pretty = buf.getvalue()
+            self.assertEqual('{\n    "a": 1,\n    "b": 2\n}\n', pretty)

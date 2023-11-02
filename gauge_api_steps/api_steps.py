@@ -64,6 +64,14 @@ def print_message(message_param: str) -> None:
     _print_and_report(message)
 
 
+@step("Pretty print <json>")
+def pretty_print(json_str_param: str) -> None:
+    json_str = _substitute(json_str_param)
+    json_loaded = json.loads(json_str)
+    pretty = json.dumps(json_loaded, indent=4)
+    _print_and_report(pretty)
+
+
 @step("Print placeholders")
 def print_placeholders() -> None:
     _print_and_report(f"Environment: \n{os.environ}")
