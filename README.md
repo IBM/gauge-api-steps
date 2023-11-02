@@ -57,6 +57,12 @@ pip install gauge-api-steps --user --upgrade
 
 ## Development
 
+When coding on this project, unit tests can be executed like this:
+
+```shell
+python -m unittest discover -v -s tests/ -p 'test_*.py'
+```
+
 [Contributions are welcome](./docs/CONTRIBUTING.md).
 
 ## Placeholders and Expressions

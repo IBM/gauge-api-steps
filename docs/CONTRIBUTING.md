@@ -45,6 +45,14 @@ Example:
 git push origin [IssueNo]_my-new-feature
 ```
 
+## Tests
+
+Execution of unit tests:
+
+```shell
+python -m unittest discover -v -s tests/ -p 'test_*.py'
+```
+
 ## Layout
 
 This project uses a [flat layout](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/).
