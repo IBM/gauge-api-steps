@@ -9,10 +9,12 @@ The following Gauge steps are implemented in this module:
   - [Request CSRF header \<header>](#request-csrf-header-header)
   - [Store \<key> \<value>](#Store-key-value)
   - [Print \<message>](#print-message)
+  - [Pretty print \<json>](#pretty-print-json)
   - [Print placeholders](#print-placeholders)
   - [Append to \<file>: \<value>](#append-to-file-value)
   - [With header \<header>: \<value>](#with-header-header-value)
   - [With body \<body>](#with-body-body)
+  - [Simulate response body: \<value>](#simulate-response-body-value)
   - [Request \<method> \<url>](#request-method-url)
   - [Assert status \<status\_code>](#assert-status-status_code)
   - [Assert header \<header>: \<value>](#assert-header-header-value)
@@ -57,6 +59,12 @@ Store a placeholder value for later use. This can also be used to concatenate ot
 
 Prints the specified text in the terminal output and into the report.
 
+## Pretty print \<json>
+
+> \* Pretty print "{\"key\": \"value\"}"
+
+Pretty-prints the specified JSON value in the terminal output and into the report.
+
 ## Print placeholders
 
 > \* Print placeholders
@@ -83,6 +91,13 @@ Sets a custom HTTP header for the next request.
 > \* With body "{\\"request-data\\": 5}"
 
 Sets the body for the next request.
+
+## Simulate response body: \<value>
+
+> \* Simulate response body: "{\\"request-data\\": 5}"
+
+Sets the response body for further assertion steps, without the need to make an actual request.
+This can be helpful during test development, when playing around with XPath or JSONPath expressions.
 
 ## Request \<method> \<url>
 
