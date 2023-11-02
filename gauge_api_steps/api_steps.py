@@ -94,6 +94,12 @@ def add_body(body_param: str) -> None:
     data_store.scenario[body_key] = bytes(body, "utf8")
 
 
+@step("Simulate response body = <value>")
+def simulate_response(body_param: str) -> None:
+    body = _substitute(body_param)
+    data_store.scenario.setdefault(response_key, dict())["body"] = body.encode('UTF-8')
+
+
 @step("Request <method> <url>")
 def make_request(method_param: str, url_param: str) -> None:
     method = _substitute(method_param)
