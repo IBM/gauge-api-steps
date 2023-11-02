@@ -47,8 +47,7 @@ class TestApiSteps(unittest.TestCase):
         self.assertRaises(AssertionError, lambda: append_to_file(out_file, "a,b,c"))
 
     def test_pretty_print(self):
-        with io.StringIO() as buf:
-            with contextlib.redirect_stdout(buf):
-                pretty_print('{"a":1,"b":2}')
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            pretty_print('{"a":1,"b":2}')
             pretty = buf.getvalue()
             self.assertEqual('{\n    "a": 1,\n    "b": 2\n}\n', pretty)
