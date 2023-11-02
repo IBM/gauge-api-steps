@@ -9,7 +9,7 @@ import re
 
 from getgauge.python import data_store, step, after_scenario, before_scenario, ExecutionContext, Messages
 from io import BytesIO
-from jsonpath_ng import parse as parse_json_path
+from jsonpath_ng.ext import parse as parse_json_path
 from lxml import etree
 import numexpr
 from string import Template
