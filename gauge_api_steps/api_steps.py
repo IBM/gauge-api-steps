@@ -26,23 +26,28 @@ csrf_value_key = "_csrf_value"
 body_key = "_body"
 response_key = "_response"
 headers_key = "_headers"
+session_changed_key = "_session_changed"
+session_file_key = "_session_file"
+session_keys = list()
 
 
 @before_scenario
 def beforescenario(context: ExecutionContext) -> None:
+    _load_session_properties()
     opener: OpenerDirector = build_opener(HTTPCookieProcessor())
     data_store.scenario[opener_key] = opener
 
 
 @after_scenario
 def afterscenario(context: ExecutionContext) -> None:
+    _save_session_properties()
     _print_and_report(f"after scenario {context}")
 
 
 @step("Response CSRF header <header>")
 def resp_csrf_header(header_param: str) -> None:
     resp_csrf_header = _substitute(header_param)
-    data_store.scenario[response_csrf_header_key] = resp_csrf_header
+    _store_in_session(response_csrf_header_key, resp_csrf_header)
 
 
 @step("Request CSRF header <header>")
@@ -55,7 +60,7 @@ def req_csrf_header(header_param: str) -> None:
 def store(key_param: str, value_param: str) -> None:
     key = _substitute(key_param)
     value = _substitute(value_param)
-    data_store.scenario[key] = value
+    _store_in_session(key, value)
 
 
 @step("Print <message>")
@@ -80,9 +85,8 @@ def print_placeholders() -> None:
 
 @step("Append to <file>: <value>")
 def append_to_file(file_param: str, value_param: str):
-    file_path = os.path.realpath(_substitute(file_param))
-    project_root = os.path.realpath(os.environ.get("GAUGE_PROJECT_ROOT"))
-    assert file_path.startswith(project_root), f"file must be inside {project_root}"
+    file_name = _substitute(file_param)
+    file_path = _assert_file_is_in_project(file_name)
     value = _substitute(value_param)
     with open(file_path, 'a') as f:
         f.write(f"{value}\n")
@@ -270,7 +274,7 @@ def save_response_jsonpath(jsonpath_param: str, key_param: str) -> None:
     key = _substitute(key_param)
     match = _find_jsonpath_match_in_response(jsonpath)
     match_str = json.dumps(match)
-    data_store.scenario[key] = match_str
+    _store_in_session(key, match_str)
 
 
 @step("Save xpath <xpath> as <key>")
@@ -279,7 +283,7 @@ def save_response_xpath(xpath_param: str, key_param: str) -> None:
     key = _substitute(key_param)
     match = _find_xpath_match_in_response(xpath)
     match_primitive = match if not isinstance(match, etree._Element) else etree.tostring(match).decode('UTF-8')
-    data_store.scenario[key] = match_primitive
+    _store_in_session(key, match_primitive)
 
 
 def _open(req: Request) -> Response:
@@ -375,3 +379,66 @@ def _print_and_report(message: str) -> None:
         message = message.replace('\t', replace_whitespace * 4)
     print(message)
     Messages.write_message(message.replace('<', '&lt;'))
+
+
+def _assert_file_is_in_project(file_name: str) -> str:
+    file_path = os.path.realpath(file_name)
+    project_root = os.path.realpath(os.environ.get("GAUGE_PROJECT_ROOT"))
+    assert file_path.startswith(project_root), f"file must be inside {project_root}, but found in {file_path}"
+    return file_path
+
+
+def _load_session_properties() -> None:
+    session_file_param = os.environ.get("session_properties", "env/default/session.properties")
+    session_file = _substitute(session_file_param)
+    session_file_path = _assert_file_is_in_project(session_file)
+    data_store.scenario[session_file_key] = session_file_path
+    if not os.path.exists(session_file_path):
+        return
+    with open(session_file_path) as s:
+        for line in s.readlines():
+            split = line.split("=", 1)
+            key = split[0].strip()
+            value = _decode_value(split[1].strip()) if len(split) >= 2 else None
+            _store_in_session(key, value, False)
+
+
+def _save_session_properties() -> None:
+    if not data_store.scenario.get(session_changed_key, False):
+        return
+    session_file_path = data_store.scenario[session_file_key]
+    tmp = f"{session_file_path}.tmp"
+    with open(tmp, 'w') as session:
+        for key in session_keys:
+            value: str = data_store.scenario.get(key)
+            if value is not None:
+                value = _encode_value(value)
+                session.write(f'{key} = {value}\n')
+    os.replace(tmp, session_file_path)
+
+
+def _encode_value(value: str) -> str:
+    """ this transforms any string into a JSON-like str, but keeps non-ascii characters as is. """
+    if value is None:
+        return None
+    value = value.replace('\\', '\\\\')
+    value = value.replace('"', '\\"')
+    value = value.replace('\n', '\\n')
+    return f'"{value}"'
+
+
+def _decode_value(value: str) -> str:
+    """ decodes a JSON-like str. """
+    if value is not None and len(value) >= 2:
+        value = value[1:-1]
+        value = value.replace('\\n', '\n')
+        value = value.replace('\\"', '"')
+        value = value.replace('\\\\', '\\')
+    return value
+
+
+def _store_in_session(key: str, value: str, changed: bool=True) -> None:
+    data_store.scenario[session_changed_key] = changed
+    data_store.scenario[key] = value
+    if key not in session_keys:
+        session_keys.append(key)
