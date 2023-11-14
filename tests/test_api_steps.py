@@ -14,7 +14,7 @@ from pathlib import Path
 from unittest.mock import Mock, call, mock_open, patch
 
 from gauge_api_steps.api_steps import (
-    opener_key, body_key, response_key, session_changed_key, session_file_key, session_keys,
+    opener_key, body_key, response_key, session_changed_key, session_file_key, session_keys_key,
     add_body, append_to_file, beforescenario, pretty_print, simulate_response,
     _load_session_properties, _save_session_properties, _store_in_session
 )
@@ -45,7 +45,7 @@ class TestApiSteps(unittest.TestCase):
     def test_simulate_response(self):
         resp = '{"a": "b"}'
         simulate_response(resp)
-        self.assertEqual(data_store.scenario[response_key]["body"], resp.encode("UTF-8"))
+        self.assertEqual(data_store.scenario[response_key]["body"], resp)
 
     def test_append(self):
         os.environ["GAUGE_PROJECT_ROOT"] = self.test_dir
@@ -94,7 +94,7 @@ class TestApiSteps(unittest.TestCase):
         data_store.scenario[session_changed_key] = True
         props_file = f"{self.resources}/session.properties"
         data_store.scenario[session_file_key] = props_file
-        session_keys.extend(['a', 'b', 'c'])
+        data_store.scenario[session_keys_key] = ['a', 'b', 'c']
         data_store.scenario['a'] = '1'
         data_store.scenario['b'] = ''
         data_store.scenario['c'] = '{\n  "key": "value",\n  "else": "\\0x41"\n}'
@@ -110,7 +110,8 @@ class TestApiSteps(unittest.TestCase):
         mocked_replace.assert_called_with(f"{props_file}.tmp", props_file)
 
     def test_store_in_session(self):
+        data_store.scenario[session_keys_key] = list()
         _store_in_session("foo", "bar")
         self.assertEquals("bar", data_store.scenario["foo"])
         self.assertTrue(data_store.scenario[session_changed_key])
-        self.assertTrue("foo" in session_keys)
+        self.assertTrue("foo" in data_store.scenario[session_keys_key])

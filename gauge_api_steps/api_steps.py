@@ -28,7 +28,7 @@ response_key = "_response"
 headers_key = "_headers"
 session_changed_key = "_session_changed"
 session_file_key = "_session_file"
-session_keys = list()
+session_keys_key = "_session_keys"
 
 
 @before_scenario
@@ -109,7 +109,7 @@ def add_body(body_param: str) -> None:
 @step("Simulate response body: <value>")
 def simulate_response(body_param: str) -> None:
     body = _substitute(body_param)
-    data_store.scenario.setdefault(response_key, dict())["body"] = body.encode('UTF-8')
+    data_store.scenario.setdefault(response_key, dict())["body"] = body
 
 
 @step("Request <method> <url>")
@@ -393,6 +393,7 @@ def _load_session_properties() -> None:
     session_file = _substitute(session_file_param)
     session_file_path = _assert_file_is_in_project(session_file)
     data_store.scenario[session_file_key] = session_file_path
+    data_store.scenario[session_keys_key] = list()
     if not os.path.exists(session_file_path):
         return
     with open(session_file_path) as s:
@@ -404,9 +405,11 @@ def _load_session_properties() -> None:
 
 
 def _save_session_properties() -> None:
-    if not data_store.scenario.get(session_changed_key, False):
+    session_changed: bool = data_store.scenario.get(session_changed_key, False)
+    session_file_path: str = data_store.scenario.get(session_file_key)
+    session_keys: list = data_store.scenario.get(session_keys_key)
+    if not session_changed or session_file_path is None or session_keys is None:
         return
-    session_file_path = data_store.scenario[session_file_key]
     tmp = f"{session_file_path}.tmp"
     with open(tmp, 'w') as session:
         for key in session_keys:
@@ -440,5 +443,6 @@ def _decode_value(value: str) -> str:
 def _store_in_session(key: str, value: str, changed: bool=True) -> None:
     data_store.scenario[session_changed_key] = changed
     data_store.scenario[key] = value
+    session_keys: list = data_store.scenario[session_keys_key]
     if key not in session_keys:
         session_keys.append(key)
