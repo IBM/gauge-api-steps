@@ -1,3 +1,8 @@
+#
+# Copyright IBM Corp. 2019-
+# SPDX-License-Identifier: MIT
+#
+
 import contextlib
 import inspect
 import io
@@ -8,7 +13,10 @@ from getgauge.python import data_store
 from pathlib import Path
 from unittest.mock import Mock
 
-from gauge_api_steps.api_steps import opener_key, append_to_file, beforescenario, pretty_print, response_key, simulate_response
+from gauge_api_steps.api_steps import (
+    opener_key, body_key, response_key,
+    add_body, append_to_file, beforescenario, pretty_print, simulate_response
+)
 
 
 class TestApiSteps(unittest.TestCase):
@@ -25,10 +33,15 @@ class TestApiSteps(unittest.TestCase):
         beforescenario(self.app_context)
         self.assertIsNotNone(data_store.scenario[opener_key])
 
+    def test_add_body(self):
+        body = "body"
+        add_body(body)
+        self.assertEqual(body, data_store.scenario[body_key])
+
     def test_simulate_response(self):
         resp = '{"a": "b"}'
         simulate_response(resp)
-        assert data_store.scenario[response_key]["body"] == resp.encode("UTF-8")
+        self.assertEqual(data_store.scenario[response_key]["body"], resp.encode("UTF-8"))
 
     def test_append(self):
         os.environ["GAUGE_PROJECT_ROOT"] = self.test_dir
