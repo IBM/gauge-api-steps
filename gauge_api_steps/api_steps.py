@@ -273,7 +273,7 @@ def save_response_jsonpath(jsonpath_param: str, key_param: str) -> None:
     jsonpath = _substitute(jsonpath_param)
     key = _substitute(key_param)
     match = _find_jsonpath_match_in_response(jsonpath)
-    match_str = json.dumps(match)
+    match_str = match if isinstance(match, str) else json.dumps(match)
     _store_in_session(key, match_str)
 
 
