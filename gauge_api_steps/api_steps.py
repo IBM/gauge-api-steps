@@ -99,7 +99,7 @@ def add_header(header_param: str, value_param: str) -> None:
 @step("With body <body>")
 def add_body(body_param: str) -> None:
     body = _substitute(body_param)
-    data_store.scenario[body_key] = bytes(body, "utf8")
+    data_store.scenario[body_key] = body
 
 
 @step("Simulate response body: <value>")
@@ -117,6 +117,8 @@ def make_request(method_param: str, url_param: str) -> None:
         req_csrf_header = data_store.scenario[request_csrf_header_key]
         headers[req_csrf_header] = data_store.scenario[csrf_value_key]
     body = data_store.scenario.pop(body_key, None)
+    if isinstance(body, str):
+        body = body.encode('UTF-8')
     req = Request(url=url, method=method, headers=headers, data=body)
     with _open(req) as resp:
         resp_headers = resp.getheaders()
