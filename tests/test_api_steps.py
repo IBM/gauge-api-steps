@@ -15,7 +15,7 @@ from unittest.mock import Mock, call, mock_open, patch
 
 from gauge_api_steps.api_steps import (
     opener_key, body_key, response_key, session_changed_key, session_file_key, session_keys_key,
-    add_body, append_to_file, beforescenario, pretty_print, simulate_response,
+    add_body, append_to_file, beforescenario, pretty_print, save_file, simulate_response,
     _load_session_properties, _save_session_properties, _store_in_session
 )
 
@@ -115,3 +115,12 @@ class TestApiSteps(unittest.TestCase):
         self.assertEquals("bar", data_store.scenario["foo"])
         self.assertTrue(data_store.scenario[session_changed_key])
         self.assertTrue("foo" in data_store.scenario[session_keys_key])
+
+    def test_save_file(self):
+        body = b'abc'
+        data_store.scenario.setdefault(response_key, {})['body'] = body
+        with patch("builtins.open", mock_open()) as mocked_open:
+            save_file("tests/downloads/image.png")
+        mocked_open.assert_called_with(f"{self.test_dir}/downloads/image.png", 'wb')
+        handle = mocked_open()
+        handle.write.assert_called_with(body)

@@ -286,6 +286,15 @@ def save_response_xpath(xpath_param: str, key_param: str) -> None:
     _store_in_session(key, match_primitive)
 
 
+@step("Save file <download>")
+def save_file(download_param):
+    download = _substitute(download_param)
+    download_path = _assert_file_is_in_project(download)
+    response_body = data_store.scenario[response_key]["body"]
+    with open(download_path, 'wb') as d:
+        d.write(response_body)
+
+
 def _open(req: Request) -> Response:
     opener: OpenerDirector = data_store.scenario[opener_key]
     try:
