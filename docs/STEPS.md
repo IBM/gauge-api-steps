@@ -30,6 +30,7 @@ The following Gauge steps are implemented in this module:
   - [Assert xpath \<xpath> = \<xml\_value>](#assert-xpath-xpath--xml_value)
   - [Save jsonpath \<jsonpath> as \<key>](#save-jsonpath-jsonpath-as-key)
   - [Save xpath \<xpath> as \<key>](#save-xpath-xpath-as-key)
+  - [Save file \<download>](#save-file-download)
 
 ## Response CSRF header \<header>
 
@@ -189,3 +190,9 @@ Saves the result as a placeholder variable with the given name. That placeholder
 > \* Save xpath "//fox/jumps" as "obstacle"
 
 Saves the result as a placeholder variable with the given name. That placeholder can be used afterwards in the same scenario.
+
+## Save file \<download>
+
+> \* Save file "downloads/image.png"
+
+Saves the response body as a file. The file must be inside the project directory.
