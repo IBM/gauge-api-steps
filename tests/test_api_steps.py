@@ -14,8 +14,8 @@ from pathlib import Path
 from unittest.mock import Mock, call, mock_open, patch
 
 from gauge_api_steps.api_steps import (
-    opener_key, body_key, response_key, session_changed_key, session_file_key, session_keys_key,
-    add_body, append_to_file, beforescenario, pretty_print, save_file, simulate_response,
+    opener_key, body_key, response_key, sent_request_headers_key, session_changed_key, session_file_key, session_keys_key,
+    add_body, append_to_file, beforescenario, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
     _load_session_properties, _save_session_properties, _store_in_session
 )
 
@@ -68,6 +68,28 @@ class TestApiSteps(unittest.TestCase):
             pretty_print('{"a":1,"b":2}')
             pretty = buf.getvalue()
             self.assertEqual('{\n    "a": 1,\n    "b": 2\n}\n', pretty)
+
+    def test_print_headers(self):
+        data_store.scenario[sent_request_headers_key] = {'req': 'reqheader'}
+        data_store.scenario.setdefault(response_key, {})["headers"] = [('resp', 'respheader')]
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            print_headers()
+            result = buf.getvalue()
+            self.assertEqual('Request headers:\n\n    req: reqheader\nResponse headers:\n\n    resp: respheader\n', result)
+
+    def test_print_status(self):
+        data_store.scenario.setdefault(response_key, {})["status"] = '200'
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            print_status()
+            result = buf.getvalue()
+            self.assertEqual('Response status:\n\n    200\n', result)
+
+    def test_print_body(self):
+        data_store.scenario.setdefault(response_key, {})["body"] = '{"a": "b", "c": 1}'.encode("UTF-8")
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            print_body()
+            result = buf.getvalue()
+            self.assertEqual('Response body:\n\n    {\n        "a": "b",\n        "c": 1\n    }\n', result)
 
     def test_load_session_properties(self):
         props_file = f"{self.test_dir}/session.properties"
