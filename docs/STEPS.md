@@ -11,6 +11,9 @@ The following Gauge steps are implemented in this module:
   - [Print \<message>](#print-message)
   - [Pretty print \<json>](#pretty-print-json)
   - [Print placeholders](#print-placeholders)
+  - [Print headers](#print-headers)
+  - [Print status](#print-status)
+  - [Print body](#print-body)
   - [Append to \<file>: \<value>](#append-to-file-value)
   - [With header \<header>: \<value>](#with-header-header-value)
   - [With body \<body>](#with-body-body)
@@ -72,6 +75,24 @@ Pretty-prints the specified JSON value in the terminal output and into the repor
 
 Prints the comprehensive list of placeholders in the terminal output and into the report. This includes every property in the used `*.env` files and the system properties.
 This can be useful for debugging.
+
+## Print headers
+
+> \* Print headers
+
+Prints out all request and response headers.
+
+## Print status
+
+> \* Print status
+
+Prints out the HTTP status code.
+
+## Print body
+
+> \* Print body
+
+Prints out the response body. If the response is JSON, it will format it.
 
 ## Append to \<file>: \<value>
 

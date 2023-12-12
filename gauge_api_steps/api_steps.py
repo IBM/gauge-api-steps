@@ -26,6 +26,7 @@ csrf_value_key = "_csrf_value"
 body_key = "_body"
 response_key = "_response"
 headers_key = "_headers"
+sent_request_headers_key = "_sent_request_headers"
 session_changed_key = "_session_changed"
 session_file_key = "_session_file"
 session_keys_key = "_session_keys"
@@ -83,6 +84,37 @@ def print_placeholders() -> None:
     _print_and_report(f"Data store: \n{data_store.scenario}")
 
 
+@step("Print headers")
+def print_headers() -> None:
+    headers: dict = data_store.scenario.get(sent_request_headers_key, {})
+    _print_and_report("Request headers:\n")
+    for header_name, header_value in headers.items():
+        _print_and_report(f"    {header_name}: {header_value}")
+    _print_and_report("Response headers:\n")
+    response_headers = data_store.scenario[response_key]["headers"]
+    for header in response_headers:
+        _print_and_report(f"    {header[0]}: {header[1]}")
+
+
+@step("Print status")
+def print_status() -> None:
+    status = data_store.scenario.get(response_key, {}).get("status")
+    _print_and_report(f"Response status:\n\n    {status}")
+
+
+@step("Print body")
+def print_body() -> None:
+    body: bytes = data_store.scenario.get(response_key, {}).get("body")
+    _print_and_report("Response body:")
+    if body is not None and len(body) > 0:
+        try:
+            json_loaded = json.loads(body.decode('UTF-8'))
+            pretty = json.dumps(json_loaded, indent=4)
+            _print_and_report(f"\n{pretty}".replace('\n', '\n    '))
+        except json.decoder.JSONDecodeError:
+            _print_and_report(body.decode('UTF-8'))
+
+
 @step("Append to <file>: <value>")
 def append_to_file(file_param: str, value_param: str):
     file_name = _substitute(file_param)
@@ -124,6 +156,7 @@ def make_request(method_param: str, url_param: str) -> None:
     if isinstance(body, str):
         body = body.encode('UTF-8')
     req = Request(url=url, method=method, headers=headers, data=body)
+    data_store.scenario[sent_request_headers_key] = req.headers
     with _open(req) as resp:
         resp_headers = resp.getheaders()
         data_store.scenario[response_key] = {
@@ -136,7 +169,7 @@ def make_request(method_param: str, url_param: str) -> None:
             resp_csrf_header = data_store.scenario[response_csrf_header_key]
             for h in resp_headers:
                 if h[0] == resp_csrf_header:
-                    data_store.scenario[csrf_value_key] = h[1]
+                    _store_in_session(csrf_value_key, h[1])
                     break
 
 
