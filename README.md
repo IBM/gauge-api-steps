@@ -5,6 +5,7 @@
 [![Gauge](https://img.shields.io/badge/Framework-Gauge-blue)](https://github.com/getgauge)
 [![XPath](https://img.shields.io/badge/XPath-blue)](https://www.w3schools.com/xml/xpath_syntax.asp)
 [![JSONPath](https://img.shields.io/badge/JSONPath-blue)](https://github.com/h2non/jsonpath-ng)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/IBM/gauge-api-steps/badge)](https://securityscorecards.dev/viewer/?uri=github.com/IBM/gauge-api-steps)
 
 A Python module, that provides re-usable steps for testing APIs with the [Gauge](https://gauge.org/) framework.
 
