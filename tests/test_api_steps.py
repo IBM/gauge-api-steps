@@ -16,8 +16,9 @@ from unittest.mock import Mock, call, mock_open, patch
 from gauge_api_steps.api_steps import (
     opener_key, body_key, response_key, sent_request_headers_key, session_changed_key, session_file_key, session_keys_key,
     add_body, append_to_file, beforescenario, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
-    _load_session_properties, _save_session_properties, _store_in_session
+    _load_session_properties, _save_session_properties, _store_in_session, base64_encode
 )
+
 
 
 class TestApiSteps(unittest.TestCase):
@@ -134,7 +135,7 @@ class TestApiSteps(unittest.TestCase):
     def test_store_in_session(self):
         data_store.scenario[session_keys_key] = list()
         _store_in_session("foo", "bar")
-        self.assertEquals("bar", data_store.scenario["foo"])
+        self.assertEqual("bar", data_store.scenario["foo"])
         self.assertTrue(data_store.scenario[session_changed_key])
         self.assertTrue("foo" in data_store.scenario[session_keys_key])
 
@@ -146,3 +147,10 @@ class TestApiSteps(unittest.TestCase):
         mocked_open.assert_called_with(f"{self.test_dir}/downloads/image.png", 'wb')
         handle = mocked_open()
         handle.write.assert_called_with(body)
+
+    def test_base64_encode(self):
+        data_store.scenario[session_keys_key] = list()
+        checkString = 'SSBhbSBhIHRlc3RzdHJpbmch'
+        base64_encode("I am a teststring!", "placeholder")
+        result = data_store.scenario.get("placeholder")
+        self.assertEqual(checkString, result)
