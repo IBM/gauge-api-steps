@@ -17,6 +17,7 @@ from typing import Any, Iterable
 from urllib.request import HTTPCookieProcessor, OpenerDirector, Request, build_opener
 from urllib.response import addinfourl as Response
 from urllib.error import HTTPError
+import base64
 
 
 opener_key = "_opener"
@@ -327,6 +328,16 @@ def save_file(download_param):
     with open(download_path, 'wb') as d:
         d.write(response_body)
 
+
+@step("Base64-encode <text> as <placeholder>")
+def base64_encode(text_param: str, placeholder_param: str):
+    text = _substitute(text_param)
+    placeholder = _substitute(placeholder_param)
+    bytesEncoded = text.encode('utf-8')
+    base = base64.b64encode(bytesEncoded)
+    asString = base.decode('utf-8')
+    _store_in_session(placeholder, asString)
+    
 
 def _open(req: Request) -> Response:
     opener: OpenerDirector = data_store.scenario[opener_key]
