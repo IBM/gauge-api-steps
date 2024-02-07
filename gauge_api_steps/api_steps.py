@@ -345,7 +345,7 @@ def base64_decode(text_param: str, placeholder_param: str):
     encodedText = text.encode('utf-8')
     decodedBase = base64.b64decode(encodedText)
     asString = decodedBase.decode('utf-8')
-    data_store.scenario[placeholder] = asString
+    _store_in_session(placeholder, asString)
     
 
 def _open(req: Request) -> Response:

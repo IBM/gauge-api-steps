@@ -15,8 +15,8 @@ from unittest.mock import Mock, call, mock_open, patch
 
 from gauge_api_steps.api_steps import (
     opener_key, body_key, response_key, sent_request_headers_key, session_changed_key, session_file_key, session_keys_key,
-    add_body, append_to_file, beforescenario, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
-    _load_session_properties, _save_session_properties, _store_in_session, base64_encode, base64_decode
+    add_body, append_to_file, base64_decode, base64_encode, beforescenario, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
+    _load_session_properties, _save_session_properties, _store_in_session
 )
 
 
@@ -160,3 +160,4 @@ class TestApiSteps(unittest.TestCase):
         base64_decode('SSBhbSBhIHRlc3RzdHJpbmch', "placeholder")
         result = data_store.scenario.get("placeholder")
         self.assertEqual(checkString, result)
+        
