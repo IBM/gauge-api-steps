@@ -156,8 +156,8 @@ class TestApiSteps(unittest.TestCase):
         self.assertEqual(checkString, result)
 
     def test_base64_decode(self):
+        data_store.scenario[session_keys_key] = list()
         checkString = "I am a teststring!"
         base64_decode('SSBhbSBhIHRlc3RzdHJpbmch', "placeholder")
         result = data_store.scenario.get("placeholder")
         self.assertEqual(checkString, result)
-        
