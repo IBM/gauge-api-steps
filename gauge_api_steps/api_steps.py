@@ -337,6 +337,15 @@ def base64_encode(text_param: str, placeholder_param: str):
     base = base64.b64encode(bytesEncoded)
     asString = base.decode('utf-8')
     _store_in_session(placeholder, asString)
+
+@step("Base64-decode <text> as <placeholder>")
+def base64_decode(text_param: str, placeholder_param: str):
+    text = _substitute(text_param)
+    placeholder = _substitute(placeholder_param)
+    encodedText = text.encode('utf-8')
+    decodedBase = base64.b64decode(encodedText)
+    asString = decodedBase.decode('utf-8')
+    _store_in_session(placeholder, asString)
     
 
 def _open(req: Request) -> Response:
