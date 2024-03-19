@@ -65,6 +65,16 @@ def store(key_param: str, value_param: str) -> None:
     _store_in_session(key, value)
 
 
+@step("Load from file <file> as <placeholder>")
+def load_from_file(file_param, placeholder_param) -> None:
+    file_name = _substitute(file_param)
+    placeholder_name = _substitute(placeholder_param)
+    file_path = _assert_file_is_in_project(file_name)
+    with open(file_path, 'r') as f:
+        content = f.read()
+    data_store.scenario[placeholder_name] = content
+
+
 @step("Print <message>")
 def print_message(message_param: str) -> None:
     message = _substitute(message_param)
@@ -117,7 +127,7 @@ def print_body() -> None:
 
 
 @step("Append to <file>: <value>")
-def append_to_file(file_param: str, value_param: str):
+def append_to_file(file_param: str, value_param: str) -> None:
     file_name = _substitute(file_param)
     file_path = _assert_file_is_in_project(file_name)
     value = _substitute(value_param)
@@ -321,7 +331,7 @@ def save_response_xpath(xpath_param: str, key_param: str) -> None:
 
 
 @step("Save file <download>")
-def save_file(download_param):
+def save_file(download_param) -> None:
     download = _substitute(download_param)
     download_path = _assert_file_is_in_project(download)
     response_body = data_store.scenario[response_key]["body"]
@@ -330,7 +340,7 @@ def save_file(download_param):
 
 
 @step("Base64-encode <text> as <placeholder>")
-def base64_encode(text_param: str, placeholder_param: str):
+def base64_encode(text_param: str, placeholder_param: str) -> None:
     text = _substitute(text_param)
     placeholder = _substitute(placeholder_param)
     bytesEncoded = text.encode('utf-8')
@@ -339,7 +349,7 @@ def base64_encode(text_param: str, placeholder_param: str):
     _store_in_session(placeholder, asString)
 
 @step("Base64-decode <text> as <placeholder>")
-def base64_decode(text_param: str, placeholder_param: str):
+def base64_decode(text_param: str, placeholder_param: str) -> None:
     text = _substitute(text_param)
     placeholder = _substitute(placeholder_param)
     encodedText = text.encode('utf-8')
