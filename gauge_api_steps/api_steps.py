@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 
+import base64
+import numexpr
 import json
 import os
 import re
@@ -11,13 +13,12 @@ from getgauge.python import data_store, step, after_scenario, before_scenario, E
 from io import BytesIO
 from jsonpath_ng.ext import parse as parse_json_path
 from lxml import etree
-import numexpr
-from string import Template
 from typing import Any, Iterable
 from urllib.request import HTTPCookieProcessor, OpenerDirector, Request, build_opener
 from urllib.response import addinfourl as Response
 from urllib.error import HTTPError
-import base64
+from .file_util import assert_file_is_in_project
+from .substitute import substitute
 
 
 opener_key = "_opener"
@@ -48,28 +49,28 @@ def afterscenario(context: ExecutionContext) -> None:
 
 @step("Response CSRF header <header>")
 def resp_csrf_header(header_param: str) -> None:
-    resp_csrf_header = _substitute(header_param)
+    resp_csrf_header = substitute(header_param)
     _store_in_session(response_csrf_header_key, resp_csrf_header)
 
 
 @step("Request CSRF header <header>")
 def req_csrf_header(header_param: str) -> None:
-    req_csrf_header = _substitute(header_param)
+    req_csrf_header = substitute(header_param)
     data_store.scenario[request_csrf_header_key] = req_csrf_header
 
 
 @step("Store <key> <value>")
 def store(key_param: str, value_param: str) -> None:
-    key = _substitute(key_param)
-    value = _substitute(value_param)
+    key = substitute(key_param)
+    value = substitute(value_param)
     _store_in_session(key, value)
 
 
 @step("Load from file <file> as <placeholder>")
 def load_from_file(file_param, placeholder_param) -> None:
-    file_name = _substitute(file_param)
-    placeholder_name = _substitute(placeholder_param)
-    file_path = _assert_file_is_in_project(file_name)
+    file_name = substitute(file_param)
+    placeholder_name = substitute(placeholder_param)
+    file_path = assert_file_is_in_project(file_name)
     with open(file_path, 'r') as f:
         content = f.read()
     data_store.scenario[placeholder_name] = content
@@ -77,13 +78,13 @@ def load_from_file(file_param, placeholder_param) -> None:
 
 @step("Print <message>")
 def print_message(message_param: str) -> None:
-    message = _substitute(message_param)
+    message = substitute(message_param)
     _print_and_report(message)
 
 
 @step("Pretty print <json>")
 def pretty_print(json_str_param: str) -> None:
-    json_str = _substitute(json_str_param)
+    json_str = substitute(json_str_param)
     json_loaded = json.loads(json_str)
     pretty = json.dumps(json_loaded, indent=4)
     _print_and_report(pretty)
@@ -128,37 +129,37 @@ def print_body() -> None:
 
 @step("Append to <file>: <value>")
 def append_to_file(file_param: str, value_param: str) -> None:
-    file_name = _substitute(file_param)
-    file_path = _assert_file_is_in_project(file_name)
-    value = _substitute(value_param)
+    file_name = substitute(file_param)
+    file_path = assert_file_is_in_project(file_name)
+    value = substitute(value_param)
     with open(file_path, 'a') as f:
         f.write(f"{value}\n")
 
 
 @step("With header <header>: <value>")
 def add_header(header_param: str, value_param: str) -> None:
-    header = _substitute(header_param)
-    value = _substitute(value_param)
+    header = substitute(header_param)
+    value = substitute(value_param)
     headers = data_store.scenario.setdefault(headers_key, {})
     headers[header] = value
 
 
 @step("With body <body>")
 def add_body(body_param: str) -> None:
-    body = _substitute(body_param)
+    body = substitute(body_param)
     data_store.scenario[body_key] = body
 
 
 @step("Simulate response body: <value>")
 def simulate_response(body_param: str) -> None:
-    body = _substitute(body_param)
+    body = substitute(body_param)
     data_store.scenario.setdefault(response_key, dict())["body"] = body
 
 
 @step("Request <method> <url>")
 def make_request(method_param: str, url_param: str) -> None:
-    method = _substitute(method_param)
-    url = _substitute(url_param)
+    method = substitute(method_param)
+    url = substitute(url_param)
     headers = data_store.scenario.pop(headers_key, {})
     if request_csrf_header_key in data_store.scenario and csrf_value_key in data_store.scenario:
         req_csrf_header = data_store.scenario[request_csrf_header_key]
@@ -186,7 +187,7 @@ def make_request(method_param: str, url_param: str) -> None:
 
 @step("Assert status <status_code>")
 def assert_response_status(status_code_param: str) -> None:
-    status_code_str = _substitute(status_code_param)
+    status_code_str = substitute(status_code_param)
     status_code = int(status_code_str)
     response = data_store.scenario[response_key]
     actual = response['status']
@@ -196,8 +197,8 @@ def assert_response_status(status_code_param: str) -> None:
 
 @step("Assert header <header>: <value>")
 def assert_header(header_param: str, value_param: str) -> None:
-    expected_header = _substitute(header_param).upper()
-    expected_value = _substitute(value_param)
+    expected_header = substitute(header_param).upper()
+    expected_value = substitute(value_param)
     response = data_store.scenario[response_key]
     headers = response['headers']
     for header in headers:
@@ -218,38 +219,38 @@ def assert_header(header_param: str, value_param: str) -> None:
 
 @step("Assert jsonpath <jsonpath> exists")
 def assert_response_jsonpath_exists(jsonpath_param: str) -> None:
-    jsonpath = _substitute(jsonpath_param)
+    jsonpath = substitute(jsonpath_param)
     # will fail, if it is not found or it is found more than once
     _find_jsonpath_match_in_response(jsonpath)
 
 
 @step("Assert xpath <xpath> exists")
 def assert_response_xpath_exists(xpath_param: str) -> None:
-    xpath = _substitute(xpath_param)
+    xpath = substitute(xpath_param)
     # will fail, if it is not found or it is found more than once
     _find_xpath_match_in_response(xpath)
 
 
 @step("Assert jsonpath <jsonpath> exists <expr>")
 def assert_response_jsonpath_exists_expr(jsonpath_param: str, expr_param: str) -> None:
-    jsonpath = _substitute(jsonpath_param)
-    expr = _substitute(expr_param)
+    jsonpath = substitute(jsonpath_param)
+    expr = substitute(expr_param)
     matches = _find_jsonpath_matches_in_response(jsonpath)
     _eval_matches_length(len(matches), expr)
 
 
 @step("Assert xpath <xpath> exists <expr>")
 def assert_response_xpath_exists_expr(xpath_param: str, expr_param: str) -> None:
-    xpath = _substitute(xpath_param)
-    expr = _substitute(expr_param)
+    xpath = substitute(xpath_param)
+    expr = substitute(expr_param)
     matches = _find_xpath_matches_in_response(xpath)
     _eval_matches_length(len(matches), expr)
 
 
 @step("Assert jsonpath <jsonpath> contains <text>")
 def assert_response_jsonpath_contains(jsonpath_param: str, text_param: str) -> None:
-    jsonpath = _substitute(jsonpath_param)
-    text = _substitute(text_param)
+    jsonpath = substitute(jsonpath_param)
+    text = substitute(text_param)
     match = _find_jsonpath_match_in_response(jsonpath)
     assert text in str(match), \
         f"Assertion failed: Expected text '{text}' not found in '{match}'"
@@ -257,8 +258,8 @@ def assert_response_jsonpath_contains(jsonpath_param: str, text_param: str) -> N
 
 @step("Assert xpath <xpath> contains <text>")
 def assert_response_xpath_contains(xpath_param: str, text_param: str) -> None:
-    xpath = _substitute(xpath_param)
-    text = _substitute(text_param)
+    xpath = substitute(xpath_param)
+    text = substitute(text_param)
     match = _find_xpath_match_in_response(xpath)
     match_str = _text_from_xml(match)
     assert text in match_str, \
@@ -267,8 +268,8 @@ def assert_response_xpath_contains(xpath_param: str, text_param: str) -> None:
 
 @step("Assert jsonpath <jsonpath> does not contain <text>")
 def assert_response_jsonpath_does_not_contain(jsonpath_param: str, text_param: str) -> None:
-    jsonpath = _substitute(jsonpath_param)
-    text = _substitute(text_param)
+    jsonpath = substitute(jsonpath_param)
+    text = substitute(text_param)
     match = _find_jsonpath_match_in_response(jsonpath)
     assert text not in str(match), \
         f"Assertion failed: Text '{text}' was found in '{match}'"
@@ -276,8 +277,8 @@ def assert_response_jsonpath_does_not_contain(jsonpath_param: str, text_param: s
 
 @step("Assert xpath <xpath> does not contain <text>")
 def assert_response_xpath_does_not_contain(xpath_param: str, text_param: str) -> None:
-    xpath = _substitute(xpath_param)
-    text = _substitute(text_param)
+    xpath = substitute(xpath_param)
+    text = substitute(text_param)
     match = _find_xpath_match_in_response(xpath)
     match_str = _text_from_xml(match)
     assert text not in match_str, \
@@ -286,8 +287,8 @@ def assert_response_xpath_does_not_contain(xpath_param: str, text_param: str) ->
 
 @step("Assert jsonpath <jsonpath> = <json_value>")
 def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) -> None:
-    jsonpath = _substitute(jsonpath_param)
-    value = _substitute(json_value_param)
+    jsonpath = substitute(jsonpath_param)
+    value = substitute(json_value_param)
     match = _find_jsonpath_match_in_response(jsonpath)
     value_json = json.loads(value)
     assert match == value_json, \
@@ -296,8 +297,8 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
 
 @step("Assert xpath <xpath> = <xml_value>")
 def assert_response_xpath_equals(xpath_param: str, xml_value_param: str) -> None:
-    xpath = _substitute(xpath_param)
-    value = _substitute(xml_value_param)
+    xpath = substitute(xpath_param)
+    value = substitute(xml_value_param)
     match = _find_xpath_match_in_response(xpath)
     match_str: str
     if isinstance(match, etree._Element):
@@ -314,8 +315,8 @@ def assert_response_xpath_equals(xpath_param: str, xml_value_param: str) -> None
 
 @step("Save jsonpath <jsonpath> as <key>")
 def save_response_jsonpath(jsonpath_param: str, key_param: str) -> None:
-    jsonpath = _substitute(jsonpath_param)
-    key = _substitute(key_param)
+    jsonpath = substitute(jsonpath_param)
+    key = substitute(key_param)
     match = _find_jsonpath_match_in_response(jsonpath)
     match_str = match if isinstance(match, str) else json.dumps(match)
     _store_in_session(key, match_str)
@@ -323,8 +324,8 @@ def save_response_jsonpath(jsonpath_param: str, key_param: str) -> None:
 
 @step("Save xpath <xpath> as <key>")
 def save_response_xpath(xpath_param: str, key_param: str) -> None:
-    xpath = _substitute(xpath_param)
-    key = _substitute(key_param)
+    xpath = substitute(xpath_param)
+    key = substitute(key_param)
     match = _find_xpath_match_in_response(xpath)
     match_primitive = match if not isinstance(match, etree._Element) else etree.tostring(match).decode('UTF-8')
     _store_in_session(key, match_primitive)
@@ -332,8 +333,8 @@ def save_response_xpath(xpath_param: str, key_param: str) -> None:
 
 @step("Save file <download>")
 def save_file(download_param) -> None:
-    download = _substitute(download_param)
-    download_path = _assert_file_is_in_project(download)
+    download = substitute(download_param)
+    download_path = assert_file_is_in_project(download)
     response_body = data_store.scenario[response_key]["body"]
     with open(download_path, 'wb') as d:
         d.write(response_body)
@@ -341,8 +342,8 @@ def save_file(download_param) -> None:
 
 @step("Base64-encode <text> as <placeholder>")
 def base64_encode(text_param: str, placeholder_param: str) -> None:
-    text = _substitute(text_param)
-    placeholder = _substitute(placeholder_param)
+    text = substitute(text_param)
+    placeholder = substitute(placeholder_param)
     bytesEncoded = text.encode('utf-8')
     base = base64.b64encode(bytesEncoded)
     asString = base.decode('utf-8')
@@ -350,8 +351,8 @@ def base64_encode(text_param: str, placeholder_param: str) -> None:
 
 @step("Base64-decode <text> as <placeholder>")
 def base64_decode(text_param: str, placeholder_param: str) -> None:
-    text = _substitute(text_param)
-    placeholder = _substitute(placeholder_param)
+    text = substitute(text_param)
+    placeholder = substitute(placeholder_param)
     encodedText = text.encode('utf-8')
     decodedBase = base64.b64decode(encodedText)
     asString = decodedBase.decode('utf-8')
@@ -435,15 +436,6 @@ def _xml_elements_equal(e1: etree._Element, e2: etree._Element) -> bool:
     return all(_xml_elements_equal(c1, c2) for c1, c2 in zip(e1, e2))
 
 
-def _substitute(gauge_param: str) -> str:
-    template = Template(gauge_param)
-    #pipe operator does not work on windows
-    substituted = template.safe_substitute(data_store.scenario)
-    template = Template(substituted)
-    substituted = template.safe_substitute(os.environ)
-    return substituted
-
-
 def _print_and_report(message: str) -> None:
     replace_whitespace = os.environ.get("replace_whitespace_in_report")
     if replace_whitespace is not None:
@@ -453,17 +445,10 @@ def _print_and_report(message: str) -> None:
     Messages.write_message(message.replace('<', '&lt;'))
 
 
-def _assert_file_is_in_project(file_name: str) -> str:
-    file_path = os.path.realpath(file_name)
-    project_root = os.path.realpath(os.environ.get("GAUGE_PROJECT_ROOT"))
-    assert file_path.startswith(project_root), f"file must be inside {project_root}, but found in {file_path}"
-    return file_path
-
-
 def _load_session_properties() -> None:
     session_file_param = os.environ.get("session_properties", "env/default/session.properties")
-    session_file = _substitute(session_file_param)
-    session_file_path = _assert_file_is_in_project(session_file)
+    session_file = substitute(session_file_param)
+    session_file_path = assert_file_is_in_project(session_file)
     data_store.scenario[session_file_key] = session_file_path
     data_store.scenario[session_keys_key] = list()
     if not os.path.exists(session_file_path):
