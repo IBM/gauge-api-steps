@@ -24,4 +24,4 @@ class TestFileUtil(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_assert_file_is_in_project_fails(self):
-        self.assertRaises(AssertionError, lambda: assert_file_is_in_project(f"/root/file.txt"))
+        self.assertRaises(AssertionError, lambda: assert_file_is_in_project("/root/file.txt"))
