@@ -7,7 +7,10 @@ The following Gauge steps are implemented in this module:
 
   - [Response CSRF header \<header>](#response-csrf-header-header)
   - [Request CSRF header \<header>](#request-csrf-header-header)
+  - [Base64-encode \<text> as \<placeholder>](#base64-encode-text-as-placeholder)
+  - [Base64-decode \<text> as \<placeholder>](#base64-decode-text-as-placeholder)
   - [Store \<key> \<value>](#Store-key-value)
+  - [Load from file \<file> as \<placeholder>](#load-from-file-file-as-placeholder)
   - [Print \<message>](#print-message)
   - [Pretty print \<json>](#pretty-print-json)
   - [Print placeholders](#print-placeholders)
@@ -50,12 +53,30 @@ Use this step together with [Request CSRF header \<header>](#request-csrf-header
 The CSRF token, that has previously been stored with the step [Response CSRF header \<header>](#response-csrf-header-header), can be used to make calls with that token now. This step specifies the header name for requests.
 A typical header for CSRF tokens is `X-CSRF-TOKEN`.
 
+## Base64-encode \<text> as \<placeholder>
+
+> \* Base64-encode "login-user" as "username64"
+
+This will encode the string `login-user` to base64 and store it in the placeholder `username64`.
+
+## Base64-decode \<text> as \<placeholder>
+
+> \* Base64-decode "bG9naW4tdXNlcg==" as "username"
+
+This will decode the base64 encoded string `bG9naW4tdXNlcg==` back to `login-user` and save it in the placeholder `username`.
+
 ## Store \<key> \<value>
 
 > \* Store "url" "\${domain}\${path}"
 
 Store a placeholder value for later use. This can also be used to concatenate other placeholders, like values from API responses.
 
+## Load from file \<file> as \<placeholder>
+
+> \* Load from file "resources/request.json" as "request_body"
+
+Loads the contents of the file "resources/request.json" into the placeholder `request_body`.
+The file must be a text file. This step does not support binary files.
 
 ## Print \<message>
 
@@ -65,7 +86,7 @@ Prints the specified text in the terminal output and into the report.
 
 ## Pretty print \<json>
 
-> \* Pretty print "{\"key\": \"value\"}"
+> \* Pretty print "{\\"key\\": \\"value\\"}"
 
 Pretty-prints the specified JSON value in the terminal output and into the report.
 

@@ -15,7 +15,7 @@ from unittest.mock import Mock, call, mock_open, patch
 
 from gauge_api_steps.api_steps import (
     opener_key, body_key, response_key, sent_request_headers_key, session_changed_key, session_file_key, session_keys_key,
-    add_body, append_to_file, base64_decode, base64_encode, beforescenario, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
+    add_body, append_to_file, base64_decode, base64_encode, beforescenario, load_from_file, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
     _load_session_properties, _save_session_properties, _store_in_session
 )
 
@@ -37,6 +37,10 @@ class TestApiSteps(unittest.TestCase):
     def test_beforescenario(self):
         beforescenario(self.app_context)
         self.assertIsNotNone(data_store.scenario[opener_key])
+
+    def test_load_from_file(self):
+        load_from_file(f"{self.resources}/file.txt", "testfile")
+        self.assertEqual("Test file\n", data_store.scenario["testfile"])
 
     def test_add_body(self):
         body = "body"
