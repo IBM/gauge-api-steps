@@ -95,6 +95,15 @@ class TestSubstitute(unittest.TestCase):
     def test_substitute_with_file_outside_project(self):
         self.assertRaises(AssertionError, lambda: substitute("!{file:/root/file.txt}"))
 
+    def test_substitute_with_gql(self):
+        test_file = f"{self.resources}/file.gql"
+        param = "!{gql:{test_file}}".replace("{test_file}", test_file)
+        result = substitute(param)
+        self.assertEqual('{"query": "query ExampleQuery {\\n  find {\\n    me\\n  }\\n}\\n"}', result)
+
+    def test_substitute_with_gql_outside_project(self):
+        self.assertRaises(AssertionError, lambda: substitute("!{gql:/root/file.gql}"))
+
     def _datetime_valid(self, dt_str: str) -> bool:
         try:
             datetime.fromisoformat(dt_str)
