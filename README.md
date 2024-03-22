@@ -66,11 +66,60 @@ python -m unittest discover -v -s tests/ -p 'test_*.py'
 
 [Contributions are welcome](./docs/CONTRIBUTING.md).
 
-## Placeholders and Expressions
+## Expressions in Parameters
 
-Step parameters allow the use of placeholders, that can be defined in the environment properties files. Some steps also allow to set a placeholder value manually. Property keys act as placeholders, they are defined like "\${key}" and they will be replaced by its value if such a property key/value pair exists in any _env/\*/\*.properties_ file or within the execution scope.
-Some steps include parameters, that allow **expressions**, that will be evaluated.
-Examples of allowed expressions include: `=1` , `>1` , `<1` , `>=1` , `<=1`.
+### Property Placeholders
+
+Step parameters allow the use of placeholders, that can be defined in the Gauge environment properties files. Some steps also allow to set a placeholder value manually. Property keys act as placeholders, they are defined like `${key}`. They will be replaced by its value if such a property key/value pair exists in any _env/\*/\*.properties_ file or within the execution scope.
+
+### Mathematical Expressions
+
+Mathematical expressions can also be evaluated. For example: `#{5 + 5 * 5}` is evaluated to `30`.
+
+It is possible to combine the two features. Placeholder substitution takes place before mathematical expression evaluation.
+
+### Functional Expressions
+
+Functional expressions will generate a result during step execution. There are different expressions:
+* UUID generation: `!{uuid}`
+* Time: `!{time}`, `!{time:%Y-%m-%d}`. The time format is optional. If omitted, ISO format will be used. The time format pattern is described in the [Python language documentation](https://docs.python.org/3.10/library/time.html#time.strftime).
+* Load content from text file: `!{file:resources/file.json}` The File must be inside the project directory.
+* Load graphQL from file: `!{gql:resources/file.gql}` or `!{graphql:resources/file.gql}` This will automatically generate the JSON format, that can be used in the request body.
+
+
+### Expression Examples
+
+Note that the property expressions start with `$`, mathematical expressions with `#`, and functional expressions with `!`.
+
+The property "homepage_url" can be defined in _env/default/test.properties_ like this:
+
+> homepage_url = https://my-app.net
+
+> \* Request "GET" "\${homepage_url}/home"
+
+> \* Print "5 + 6 = #{5 + 6}"
+
+It is also possible to define a property in a step:
+
+> \* Store "addend" "5"
+
+> \* Print "5 + 5 * 5 = #{$addend + 5 * 5}"
+
+And also to create new properties from old:
+
+> \* Store "new\_url" "${base_url}/id=!{uuid}&created=!{time}"
+
+> \* Print "!{uuid}"
+
+> \* Print "!{time}"
+
+> \* Print "!{time:%Y-%m-%d}"
+
+> \* With body "!{file:resources/request.json}"
+
+> \* With body "!{file:resources/request.xml}"
+
+> \* With body "!{gql:resources/request.gql}"
 
 ### Internal Placeholders
 

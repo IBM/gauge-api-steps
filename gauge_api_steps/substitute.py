@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 
+import json
 import numexpr
 import os
 import uuid
@@ -79,5 +80,13 @@ def _evaluate_expression(expression: str) -> str:
         file_path = assert_file_is_in_project(file_name)
         with open(file_path, 'r') as f:
             return f.read()
+    elif expression_lower.startswith(("gql:", "graphql:")):
+        file_name = expression.split(':', 2)[1]
+        file_path = assert_file_is_in_project(file_name)
+        with open(file_path, 'r') as f:
+            gql = f.read()
+            gql_json = json.loads("{}")
+            gql_json["query"] = gql
+            return json.dumps(gql_json)
     else:
         raise ValueError(f"unsupported substitute {expression}")
