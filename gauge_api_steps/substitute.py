@@ -60,33 +60,38 @@ def _substitute_expressions(marker_char: str, text: str, evaluator: Callable[[st
 
 
 def _evaluate_expression(expression: str) -> str:
-    file_prefix = "file:"
-    expression_lower = expression.lower()
-    if expression_lower == "uuid":
+    if ":" in expression:
+        (cmd, value) = expression.split(':', 2)
+    else:
+        (cmd, value) = (expression, None)
+    cmd = cmd.lower()
+    if cmd == "uuid":
         return str(uuid.uuid4())
-    elif expression_lower.startswith("time"):
-        if expression_lower.startswith("time:"):
-            format = expression.split(':', 2)[1]
-        elif expression_lower == "time":
-            format = None
-        else:
-            raise ValueError(f"unsupported substitute {expression}")
-        if format is None:
-            return datetime.now().isoformat()
-        else:
-            return datetime.now().strftime(format)
-    elif expression_lower.startswith(file_prefix):
-        file_name = expression[len(file_prefix):]
-        file_path = assert_file_is_in_project(file_name)
-        with open(file_path, 'r') as f:
-            return f.read()
-    elif expression_lower.startswith(("gql:", "graphql:")):
-        file_name = expression.split(':', 2)[1]
-        file_path = assert_file_is_in_project(file_name)
-        with open(file_path, 'r') as f:
-            gql = f.read()
-            gql_json = json.loads("{}")
-            gql_json["query"] = gql
-            return json.dumps(gql_json)
+    elif cmd == "time":
+        return _evaluate_time(value)
+    elif cmd == "file":
+        return _evaluate_file(value)
+    elif cmd in ("gql", "graphql"):
+        return _evaluate_gql(value)
     else:
         raise ValueError(f"unsupported substitute {expression}")
+
+
+def _evaluate_time(format: str) -> str:
+    if format is None:
+        return datetime.now().isoformat()
+    else:
+        return datetime.now().strftime(format)
+
+
+def _evaluate_file(file_name: str) -> str:
+    file_path = assert_file_is_in_project(file_name)
+    with open(file_path, 'r') as f:
+        return f.read()
+
+
+def _evaluate_gql(file_name: str) -> str:
+    gql = _evaluate_file(file_name)
+    gql_json = json.loads("{}")
+    gql_json["query"] = gql
+    return json.dumps(gql_json)
