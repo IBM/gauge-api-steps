@@ -99,9 +99,9 @@ class TestApiSteps(unittest.TestCase):
     def test_load_session_properties(self):
         props_file = f"{self.test_dir}/session.properties"
         os.environ["session_properties"] = props_file
-        data = ('a = "1"\n'
-            'b = ""\n'
-            'c = "{\\n  \\"key\": \\"value\\",\\n  \\"else\\": \\"\\\\0x41\"\\n}"\n')
+        data = ('a = 1\n'
+            'b = \n'
+            'c = {\\n  \\"key\": \\"value\\",\\n  \\"else\\": \\"\\\\0x41\"\\n}\n')
         with patch("builtins.open", mock_open(read_data=data)) as mocked_open, patch("os.path.exists") as mocked_exists:
             mocked_exists.return_value = True
             _load_session_properties()
@@ -130,9 +130,9 @@ class TestApiSteps(unittest.TestCase):
         mocked_open.assert_called_with(f"{props_file}.tmp", 'w')
         handle = mocked_open()
         handle.write.assert_has_calls([
-            call('a = "1"\n'),
-            call('b = ""\n'),
-            call('c = "{\\n  \\"key\\": \\"value\\",\\n  \\"else\\": \\"\\\\0x41\\"\\n}"\n')
+            call('a = 1\n'),
+            call('b = \n'),
+            call('c = {\\n  "key": "value",\\n  "else": "\\\\0x41"\\n}\n')
         ])
         mocked_replace.assert_called_with(f"{props_file}.tmp", props_file)
 

@@ -478,23 +478,17 @@ def _save_session_properties() -> None:
 
 
 def _encode_value(value: str) -> str:
-    """ this transforms any string into a JSON-like str, but keeps non-ascii characters as is. """
+    """ this transforms any string into a format, that can be stored in the session properties file. """
     if value is None:
         return None
-    value = value.replace('\\', '\\\\')
-    value = value.replace('"', '\\"')
-    value = value.replace('\n', '\\n')
-    return f'"{value}"'
+    return value.encode('unicode_escape').decode()
 
 
 def _decode_value(value: str) -> str:
-    """ decodes a JSON-like str. """
-    if value is not None and len(value) >= 2:
-        value = value[1:-1]
-        value = value.replace('\\n', '\n')
-        value = value.replace('\\"', '"')
-        value = value.replace('\\\\', '\\')
-    return value
+    """ decodes a string from the format in the session properties file.  """
+    if value is None:
+        return None
+    return value.encode().decode('unicode_escape')
 
 
 def _store_in_session(key: str, value: str, changed: bool=True) -> None:
