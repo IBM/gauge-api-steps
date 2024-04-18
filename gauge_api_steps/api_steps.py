@@ -18,6 +18,7 @@ from urllib.request import HTTPCookieProcessor, OpenerDirector, Request, build_o
 from urllib.response import addinfourl as Response
 from urllib.error import HTTPError
 from .file_util import assert_file_is_in_project
+from .session import load_session_properties, save_session_properties, store_in_session
 from .substitute import substitute
 
 
@@ -29,28 +30,27 @@ body_key = "_body"
 response_key = "_response"
 headers_key = "_headers"
 sent_request_headers_key = "_sent_request_headers"
-session_changed_key = "_session_changed"
-session_file_key = "_session_file"
-session_keys_key = "_session_keys"
 
 
 @before_scenario
 def beforescenario(context: ExecutionContext) -> None:
-    _load_session_properties()
+    session_file_param = os.environ.get("session_properties", "env/default/session.properties")
+    session_file = substitute(session_file_param)
+    load_session_properties(session_file)
     opener: OpenerDirector = build_opener(HTTPCookieProcessor())
     data_store.scenario[opener_key] = opener
 
 
 @after_scenario
 def afterscenario(context: ExecutionContext) -> None:
-    _save_session_properties()
+    save_session_properties()
     _print_and_report(f"after scenario {context}")
 
 
 @step("Response CSRF header <header>")
 def resp_csrf_header(header_param: str) -> None:
     resp_csrf_header = substitute(header_param)
-    _store_in_session(response_csrf_header_key, resp_csrf_header)
+    store_in_session(response_csrf_header_key, resp_csrf_header)
 
 
 @step("Request CSRF header <header>")
@@ -63,7 +63,7 @@ def req_csrf_header(header_param: str) -> None:
 def store(key_param: str, value_param: str) -> None:
     key = substitute(key_param)
     value = substitute(value_param)
-    _store_in_session(key, value)
+    store_in_session(key, value)
 
 
 @step("Load from file <file> as <placeholder>")
@@ -181,7 +181,7 @@ def make_request(method_param: str, url_param: str) -> None:
             resp_csrf_header = data_store.scenario[response_csrf_header_key]
             for h in resp_headers:
                 if h[0] == resp_csrf_header:
-                    _store_in_session(csrf_value_key, h[1])
+                    store_in_session(csrf_value_key, h[1])
                     break
 
 
@@ -319,7 +319,7 @@ def save_response_jsonpath(jsonpath_param: str, key_param: str) -> None:
     key = substitute(key_param)
     match = _find_jsonpath_match_in_response(jsonpath)
     match_str = match if isinstance(match, str) else json.dumps(match)
-    _store_in_session(key, match_str)
+    store_in_session(key, match_str)
 
 
 @step("Save xpath <xpath> as <key>")
@@ -328,7 +328,7 @@ def save_response_xpath(xpath_param: str, key_param: str) -> None:
     key = substitute(key_param)
     match = _find_xpath_match_in_response(xpath)
     match_primitive = match if not isinstance(match, etree._Element) else etree.tostring(match).decode('UTF-8')
-    _store_in_session(key, match_primitive)
+    store_in_session(key, match_primitive)
 
 
 @step("Save file <download>")
@@ -347,7 +347,7 @@ def base64_encode(text_param: str, placeholder_param: str) -> None:
     bytesEncoded = text.encode('utf-8')
     base = base64.b64encode(bytesEncoded)
     asString = base.decode('utf-8')
-    _store_in_session(placeholder, asString)
+    store_in_session(placeholder, asString)
 
 @step("Base64-decode <text> as <placeholder>")
 def base64_decode(text_param: str, placeholder_param: str) -> None:
@@ -356,7 +356,7 @@ def base64_decode(text_param: str, placeholder_param: str) -> None:
     encodedText = text.encode('utf-8')
     decodedBase = base64.b64decode(encodedText)
     asString = decodedBase.decode('utf-8')
-    _store_in_session(placeholder, asString)
+    store_in_session(placeholder, asString)
     
 
 def _open(req: Request) -> Response:
@@ -443,57 +443,3 @@ def _print_and_report(message: str) -> None:
         message = message.replace('\t', replace_whitespace * 4)
     print(message)
     Messages.write_message(message.replace('<', '&lt;'))
-
-
-def _load_session_properties() -> None:
-    session_file_param = os.environ.get("session_properties", "env/default/session.properties")
-    session_file = substitute(session_file_param)
-    session_file_path = assert_file_is_in_project(session_file)
-    data_store.scenario[session_file_key] = session_file_path
-    data_store.scenario[session_keys_key] = list()
-    if not os.path.exists(session_file_path):
-        return
-    with open(session_file_path) as s:
-        for line in s.readlines():
-            split = line.split("=", 1)
-            key = split[0].strip()
-            value = _decode_value(split[1].strip()) if len(split) >= 2 else None
-            _store_in_session(key, value, False)
-
-
-def _save_session_properties() -> None:
-    session_changed: bool = data_store.scenario.get(session_changed_key, False)
-    session_file_path: str = data_store.scenario.get(session_file_key)
-    session_keys: list = data_store.scenario.get(session_keys_key)
-    if not session_changed or session_file_path is None or session_keys is None:
-        return
-    tmp = f"{session_file_path}.tmp"
-    with open(tmp, 'w') as session:
-        for key in session_keys:
-            value: str = data_store.scenario.get(key)
-            if value is not None:
-                value = _encode_value(value)
-                session.write(f'{key} = {value}\n')
-    os.replace(tmp, session_file_path)
-
-
-def _encode_value(value: str) -> str:
-    """ this transforms any string into a format, that can be stored in the session properties file. """
-    if value is None:
-        return None
-    return value.encode('unicode_escape').decode()
-
-
-def _decode_value(value: str) -> str:
-    """ decodes a string from the format in the session properties file.  """
-    if value is None:
-        return None
-    return value.encode().decode('unicode_escape')
-
-
-def _store_in_session(key: str, value: str, changed: bool=True) -> None:
-    data_store.scenario[session_changed_key] = changed
-    data_store.scenario[key] = value
-    session_keys: list = data_store.scenario[session_keys_key]
-    if key not in session_keys:
-        session_keys.append(key)
