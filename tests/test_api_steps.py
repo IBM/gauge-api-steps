@@ -20,7 +20,6 @@ from gauge_api_steps.api_steps import (
 )
 
 
-
 class TestApiSteps(unittest.TestCase):
 
     def setUp(self):
@@ -50,7 +49,7 @@ class TestApiSteps(unittest.TestCase):
     def test_simulate_response(self):
         resp = '{"a": "b"}'
         simulate_response(resp)
-        self.assertEqual(data_store.scenario[response_key]["body"], resp)
+        self.assertEqual(data_store.scenario[response_key]["body"], resp.encode())
 
     def test_append(self):
         os.environ["GAUGE_PROJECT_ROOT"] = self.test_dir
@@ -165,3 +164,7 @@ class TestApiSteps(unittest.TestCase):
         base64_decode('SSBhbSBhIHRlc3RzdHJpbmch', "placeholder")
         result = data_store.scenario.get("placeholder")
         self.assertEqual(checkString, result)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -25,3 +25,7 @@ class TestFileUtil(unittest.TestCase):
 
     def test_assert_file_is_in_project_fails(self):
         self.assertRaises(AssertionError, lambda: assert_file_is_in_project("/root/file.txt"))
+
+
+if __name__ == '__main__':
+    unittest.main()
