@@ -90,7 +90,7 @@ class TestApiSteps(unittest.TestCase):
             self.assertEqual('Response status:\n\n    200\n', result)
 
     def test_print_body(self):
-        data_store.scenario.setdefault(response_key, {})["body"] = '{"a": "b", "c": 1}'.encode("UTF-8")
+        data_store.scenario.setdefault(response_key, {})["body"] = '{"a": "b", "c": 1}'.encode()
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
             print_body()
             result = buf.getvalue()
