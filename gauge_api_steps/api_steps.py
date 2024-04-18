@@ -290,6 +290,9 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
     jsonpath = substitute(jsonpath_param)
     value = substitute(json_value_param)
     match = _find_jsonpath_match_in_response(jsonpath)
+    if os.environ.get("lenient_json_str_comparison", "false").lower() in ("true", "1"):
+        if (not value.strip().startswith(('[', '{', '"',))) and (not value.strip().isdecimal()):
+            value  = f'"{value}"'
     value_json = json.loads(value)
     assert match == value_json, \
         f"Assertion failed: Expected value '{value}' does not match '{match}'"
