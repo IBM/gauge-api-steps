@@ -107,12 +107,12 @@ class TestSubstitute(unittest.TestCase):
 
     def test_substitute_order_with_source_os(self):
         data_store.scenario["param"] = "data-store"
-        os.environ.setdefault("param", "os-env")
+        os.environ["param"] = "os-env"
         result = substitute("${param}")
         self.assertEqual("os-env", result)
 
     def test_substitute_order_with_source_session(self):
-        os.environ.setdefault("param", "os-env")
+        os.environ["param"] = "os-env"
         store_in_session("param", "session")
         result = substitute("${param}")
         self.assertEqual("session", result)

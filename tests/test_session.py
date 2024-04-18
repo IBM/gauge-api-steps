@@ -68,7 +68,7 @@ class TestSession(unittest.TestCase):
         self.assertTrue("foo" in data_store.scenario[session_keys_key])
 
     def test_session_properties(self):
-        os.environ.setdefault("should_not", "be_included")
+        os.environ["should_not"] = "be_included"
         data_store.scenario["should_not"] = "be_included"
         store_in_session("key", "value")
         result = session_properties()
