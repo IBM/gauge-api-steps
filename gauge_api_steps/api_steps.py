@@ -120,11 +120,11 @@ def print_body() -> None:
     _print_and_report("Response body:")
     if body is not None and len(body) > 0:
         try:
-            json_loaded = json.loads(body.decode('UTF-8'))
+            json_loaded = json.loads(body.decode())
             pretty = json.dumps(json_loaded, indent=4)
             _print_and_report(f"\n{pretty}".replace('\n', '\n    '))
         except json.decoder.JSONDecodeError:
-            _print_and_report(body.decode('UTF-8'))
+            _print_and_report(body.decode())
 
 
 @step("Append to <file>: <value>")
@@ -153,7 +153,7 @@ def add_body(body_param: str) -> None:
 @step("Simulate response body: <value>")
 def simulate_response(body_param: str) -> None:
     body = substitute(body_param)
-    data_store.scenario.setdefault(response_key, dict())["body"] = body
+    data_store.scenario.setdefault(response_key, dict())["body"] = body.encode()
 
 
 @step("Request <method> <url>")
@@ -166,7 +166,7 @@ def make_request(method_param: str, url_param: str) -> None:
         headers[req_csrf_header] = data_store.scenario[csrf_value_key]
     body = data_store.scenario.pop(body_key, None)
     if isinstance(body, str):
-        body = body.encode('UTF-8')
+        body = body.encode()
     req = Request(url=url, method=method, headers=headers, data=body)
     data_store.scenario[sent_request_headers_key] = req.headers
     with _open(req) as resp:
@@ -327,7 +327,7 @@ def save_response_xpath(xpath_param: str, key_param: str) -> None:
     xpath = substitute(xpath_param)
     key = substitute(key_param)
     match = _find_xpath_match_in_response(xpath)
-    match_primitive = match if not isinstance(match, etree._Element) else etree.tostring(match).decode('UTF-8')
+    match_primitive = match if not isinstance(match, etree._Element) else etree.tostring(match).decode()
     store_in_session(key, match_primitive)
 
 
@@ -344,20 +344,21 @@ def save_file(download_param) -> None:
 def base64_encode(text_param: str, placeholder_param: str) -> None:
     text = substitute(text_param)
     placeholder = substitute(placeholder_param)
-    bytesEncoded = text.encode('utf-8')
+    bytesEncoded = text.encode()
     base = base64.b64encode(bytesEncoded)
-    asString = base.decode('utf-8')
+    asString = base.decode()
     store_in_session(placeholder, asString)
+
 
 @step("Base64-decode <text> as <placeholder>")
 def base64_decode(text_param: str, placeholder_param: str) -> None:
     text = substitute(text_param)
     placeholder = substitute(placeholder_param)
-    encodedText = text.encode('utf-8')
+    encodedText = text.encode()
     decodedBase = base64.b64decode(encodedText)
-    asString = decodedBase.decode('utf-8')
+    asString = decodedBase.decode()
     store_in_session(placeholder, asString)
-    
+
 
 def _open(req: Request) -> Response:
     opener: OpenerDirector = data_store.scenario[opener_key]
@@ -370,15 +371,15 @@ def _open(req: Request) -> Response:
 def _find_jsonpath_match_in_response(jsonpath: str) -> Any:
     matches = _find_jsonpath_matches_in_response(jsonpath)
     assert len(matches) > 0, \
-        f"Assertion failed: No value found at {jsonpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
+        f"Assertion failed: No value found at {jsonpath} in {data_store.scenario[response_key]['body'].decode()}"
     assert len(matches) == 1, \
-        f"Assertion failed: multiple matches for {jsonpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
+        f"Assertion failed: multiple matches for {jsonpath} in {data_store.scenario[response_key]['body'].decode()}"
     return matches[0].value
 
 
 def _find_jsonpath_matches_in_response(jsonpath: str) -> Iterable[Any]:
     resp: bytes = data_store.scenario[response_key]['body']
-    resp_str = resp.decode('UTF-8')
+    resp_str = resp.decode()
     resp_json = json.loads(resp_str)
     jsonpath_expression = parse_json_path(jsonpath)
     match = jsonpath_expression.find(resp_json)
@@ -388,9 +389,9 @@ def _find_jsonpath_matches_in_response(jsonpath: str) -> Iterable[Any]:
 def _find_xpath_match_in_response(xpath: str) -> etree._Element | str | int | float:
     matches = _find_xpath_matches_in_response(xpath)
     assert len(matches) > 0, \
-        f"Assertion failed: No value found at {xpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
+        f"Assertion failed: No value found at {xpath} in {data_store.scenario[response_key]['body'].decode()}"
     assert len(matches) == 1, \
-        f"Assertion failed: multiple matches for {xpath} in {data_store.scenario[response_key]['body'].decode('UTF-8')}"
+        f"Assertion failed: multiple matches for {xpath} in {data_store.scenario[response_key]['body'].decode()}"
     return matches[0]
 
 

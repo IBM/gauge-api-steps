@@ -44,7 +44,7 @@ class TestApiSteps(unittest.TestCase):
     def test_simulate_response(self):
         resp = '{"a": "b"}'
         simulate_response(resp)
-        self.assertEqual(data_store.scenario[response_key]["body"], resp)
+        self.assertEqual(data_store.scenario[response_key]["body"], resp.encode())
 
     def test_append(self):
         out_file = f"{TEST_OUT_DIR}/output.csv"
@@ -82,7 +82,7 @@ class TestApiSteps(unittest.TestCase):
             self.assertEqual('Response status:\n\n    200\n', result)
 
     def test_print_body(self):
-        data_store.scenario.setdefault(response_key, {})["body"] = '{"a": "b", "c": 1}'.encode("UTF-8")
+        data_store.scenario.setdefault(response_key, {})["body"] = '{"a": "b", "c": 1}'.encode()
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
             print_body()
             result = buf.getvalue()
@@ -108,3 +108,7 @@ class TestApiSteps(unittest.TestCase):
         base64_decode('SSBhbSBhIHRlc3RzdHJpbmch', "placeholder")
         result = data_store.scenario.get("placeholder")
         self.assertEqual(checkString, result)
+
+
+if __name__ == '__main__':
+    unittest.main()
