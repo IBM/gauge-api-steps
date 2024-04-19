@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 #
 
-import inspect
 import os
 import re
 import time
@@ -11,8 +10,8 @@ import unittest
 
 from datetime import datetime
 from getgauge.python import data_store
-from pathlib import Path
-
+from tests import TEST_DIR, TEST_RESOURCES_DIR
+from gauge_api_steps.session import store_in_session
 from gauge_api_steps.substitute import substitute
 
 
@@ -20,10 +19,7 @@ class TestSubstitute(unittest.TestCase):
 
     def setUp(self):
         self.startTime = time.time()
-        path = Path(inspect.getfile(self.__class__))
-        test_dir = path.parent.absolute()
-        self.resources = str(os.path.join(test_dir, "resources"))
-        os.environ["GAUGE_PROJECT_ROOT"] = str(test_dir)
+        os.environ["GAUGE_PROJECT_ROOT"] = TEST_DIR
 
     def tearDown(self):
         t = time.time() - self.startTime
@@ -87,7 +83,7 @@ class TestSubstitute(unittest.TestCase):
         self.assertRaises(ValueError, lambda: substitute("!{nonexistent}"))
 
     def test_substitute_with_file(self):
-        test_file = f"{self.resources}/file.txt"
+        test_file = f"{TEST_RESOURCES_DIR}/file.txt"
         param = "!{file:{test_file}}".replace("{test_file}", test_file)
         result = substitute(param)
         self.assertEqual("Test file\n", result)
@@ -96,13 +92,30 @@ class TestSubstitute(unittest.TestCase):
         self.assertRaises(AssertionError, lambda: substitute("!{file:/root/file.txt}"))
 
     def test_substitute_with_gql(self):
-        test_file = f"{self.resources}/file.gql"
+        test_file = f"{TEST_RESOURCES_DIR}/file.gql"
         param = "!{gql:{test_file}}".replace("{test_file}", test_file)
         result = substitute(param)
         self.assertEqual('{"query": "query ExampleQuery {\\n  find {\\n    me\\n  }\\n}\\n"}', result)
 
     def test_substitute_with_gql_outside_project(self):
         self.assertRaises(AssertionError, lambda: substitute("!{gql:/root/file.gql}"))
+
+    def test_substitute_order_with_source_data_store(self):
+        data_store.scenario["param"] = "data-store"
+        result = substitute("${param}")
+        self.assertEqual("data-store", result)
+
+    def test_substitute_order_with_source_os(self):
+        data_store.scenario["param"] = "data-store"
+        os.environ["param"] = "os-env"
+        result = substitute("${param}")
+        self.assertEqual("os-env", result)
+
+    def test_substitute_order_with_source_session(self):
+        os.environ["param"] = "os-env"
+        store_in_session("param", "session")
+        result = substitute("${param}")
+        self.assertEqual("session", result)
 
     def _datetime_valid(self, dt_str: str) -> bool:
         try:
