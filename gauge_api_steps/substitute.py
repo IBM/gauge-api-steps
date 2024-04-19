@@ -14,6 +14,7 @@ from numpy import array2string
 from string import Template
 from typing import Callable
 from .file_util import assert_file_is_in_project
+from .session import session_properties
 
 
 def substitute(gauge_param: str) -> str:
@@ -36,6 +37,8 @@ def substitute(gauge_param: str) -> str:
     """
     template = Template(gauge_param)
     #pipe operator for sets does not work on windows
+    substituted = template.safe_substitute(session_properties())
+    template = Template(substituted)
     substituted = template.safe_substitute(os.environ)
     template = Template(substituted)
     substituted = template.safe_substitute(data_store.scenario)
