@@ -13,7 +13,7 @@ from unittest.mock import Mock, mock_open, patch
 from tests import TEST_DIR, TEST_RESOURCES_DIR, TEST_OUT_DIR
 from gauge_api_steps.api_steps import (
     opener_key, body_key, response_key, sent_request_headers_key,
-    add_body, append_to_file, base64_decode, base64_encode, beforescenario, load_from_file, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
+    add_body, append_to_file, assert_response_jsonpath_equals, base64_decode, base64_encode, beforescenario, load_from_file, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
 )
 
 
@@ -87,6 +87,20 @@ class TestApiSteps(unittest.TestCase):
             print_body()
             result = buf.getvalue()
             self.assertEqual('Response body:\n\n    {\n        "a": "b",\n        "c": 1\n    }\n', result)
+
+    def test_assert_response_jsonpath_equals_with_json_stucture(self):
+        json_str = '{"a": {"b": "value"}}'
+        data_store.scenario[response_key] = {'body': json_str.encode()}
+        assert_response_jsonpath_equals("$", json_str)
+
+    def test_assert_response_jsonpath_equals_with_json_str(self):
+        data_store.scenario[response_key] = {'body': '{"a": {"b": "value"}}'.encode()}
+        assert_response_jsonpath_equals("$.a.b", '"value"')
+
+    def test_assert_response_jsonpath_equals_with_lenient_json_str(self):
+        os.environ["lenient_json_str_comparison"] = "True"
+        data_store.scenario[response_key] = {'body': '{"a": {"b": "value"}}'.encode()}
+        assert_response_jsonpath_equals("$.a.b", "value")
 
     def test_save_file(self):
         body = b'abc'

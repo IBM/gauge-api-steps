@@ -290,6 +290,9 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
     jsonpath = substitute(jsonpath_param)
     value = substitute(json_value_param)
     match = _find_jsonpath_match_in_response(jsonpath)
+    if os.environ.get("lenient_json_str_comparison", "false").lower() in ("true", "1"):
+        if (not value.strip().startswith(('[', '{', '"',))) and (not is_numeric(value.strip())):
+            value  = f'"{value}"'
     value_json = json.loads(value)
     assert match == value_json, \
         f"Assertion failed: Expected value '{value}' does not match '{match}'"
@@ -435,6 +438,14 @@ def _xml_elements_equal(e1: etree._Element, e2: etree._Element) -> bool:
     if e1.attrib != e2.attrib: return False
     if len(e1) != len(e2): return False
     return all(_xml_elements_equal(c1, c2) for c1, c2 in zip(e1, e2))
+
+
+def is_numeric(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
 
 
 def _print_and_report(message: str) -> None:
