@@ -169,6 +169,40 @@ def make_request(method_param: str, url_param: str) -> None:
         body = body.encode()
     req = Request(url=url, method=method, headers=headers, data=body)
     data_store.scenario[sent_request_headers_key] = req.headers
+    _print_and_report("*********")
+    _print_and_report(str(req))
+    _print_and_report("*********")
+    _print_and_report(str(dir(req)))
+    _print_and_report("*********")
+    _print_and_report(req.get_method() + req.get_full_url())
+    _print_and_report("*********")
+    _print_and_report(str(req.header_items()))
+    _print_and_report("*********")
+    _print_and_report(req.host)
+    _print_and_report("*********")
+    _print_and_report(req.origin_req_host)
+    _print_and_report("*********")
+    _print_and_report(req.selector)
+    _print_and_report("*********")
+    _print_and_report(str(req.data))
+    _print_and_report("*********")
+# *********
+# <urllib.request.Request·object·at·0x106df3070>
+# *********
+# ['__class__',·'__delattr__',·'__dict__',·'__dir__',·'__doc__',·'__eq__',·'__format__',·'__ge__',·'__getattribute__',·'__gt__',·'__hash__',·'__init__',·'__init_subclass__',·'__le__',·'__lt__',·'__module__',·'__ne__',·'__new__',·'__reduce__',·'__reduce_ex__',·'__repr__',·'__setattr__',·'__sizeof__',·'__str__',·'__subclasshook__',·'__weakref__',·'_data',·'_full_url',·'_parse',·'_tunnel_host',·'add_header',·'add_unredirected_header',·'data',·'fragment',·'full_url',·'get_full_url',·'get_header',·'get_method',·'has_header',·'has_proxy',·'header_items',·'headers',·'host',·'method',·'origin_req_host',·'remove_header',·'selector',·'set_proxy',·'type',·'unredirected_hdrs',·'unverifiable']
+# *********
+# POSThttps://inte-rest-barmer-app.crm-business-solutions.de/app/loyaltyprogram/1/rewardsquery
+# *********
+# [('Authorization',·'Basic·Ym9udXNhcHAtY2xpZW50LWlkOkFKYl9OeklyQTFXcXBMblVWR3NCcldiM0hZaG83QmZRem1tNjl3WTh3Nkdtek9sUnVHUjVPUjU5TG9zeGxxeHhlRUY3cC1LeWxtTGRORWZUWDBSRzUyNA=='),·('Content-type',·'application/json')]
+# *********
+# inte-rest-barmer-app.crm-business-solutions.de
+# *********
+# inte-rest-barmer-app.crm-business-solutions.de
+# *********
+# /app/loyaltyprogram/1/rewardsquery
+# *********
+# b'{"onlyValid":·true}'
+# *********
     with _open(req) as resp:
         resp_headers = resp.getheaders()
         data_store.scenario[response_key] = {
