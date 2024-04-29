@@ -20,9 +20,9 @@ setup(
     packages=['gauge_api_steps'],
     install_requires=[
         'getgauge',
-        'jsonpath-ng',
-        'lxml>=4.9.2',
-        'numexpr>=2.8.1',
+        'jsonpath-ng==1.6.1',
+        'lxml==5.2.1',
+        'numexpr==2.10.0',
     ],
     zip_safe=False
 )
