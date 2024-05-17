@@ -5,25 +5,19 @@
 
 import os
 import re
-import time
 import unittest
 
 from datetime import datetime
 from getgauge.python import data_store
-from tests import TEST_DIR, TEST_RESOURCES_DIR
 from gauge_api_steps.session import store_in_session
 from gauge_api_steps.substitute import substitute
+from tests import TEST_DIR, TEST_RESOURCES_DIR
 
 
 class TestSubstitute(unittest.TestCase):
 
     def setUp(self):
-        self.startTime = time.time()
         os.environ["GAUGE_PROJECT_ROOT"] = TEST_DIR
-
-    def tearDown(self):
-        t = time.time() - self.startTime
-        print(f"{t:.3f}s")
 
     def test_substitute_replace(self):
         tableflip = "(ノಠ益ಠ)ノ彡┻━┻"

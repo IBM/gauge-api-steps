@@ -73,3 +73,7 @@ class TestSession(unittest.TestCase):
         store_in_session("key", "value")
         result = session_properties()
         self.assertEqual({"key": "value"}, result)
+
+
+if __name__ == '__main__':
+    unittest.main()

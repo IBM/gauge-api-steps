@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: MIT
 #
 
-import os
+from pathlib import Path
 
-PROJECT_DIR = os.getcwd()
-TEST_DIR = os.path.join(PROJECT_DIR, "tests")
-TEST_RESOURCES_DIR = os.path.join(TEST_DIR, "resources")
-TEST_OUT_DIR = os.path.join(TEST_DIR, "out")
+_test_dir = Path(__file__).absolute().parent
+TEST_DIR = str(_test_dir)
+PROJECT_DIR = str(_test_dir.parent)
+TEST_RESOURCES_DIR = str(_test_dir.joinpath("resources"))
+TEST_OUT_DIR = str(_test_dir.joinpath("out"))
