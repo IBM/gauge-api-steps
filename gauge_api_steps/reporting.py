@@ -32,7 +32,7 @@ def report_response_info(resp: HTTPResponse|HTTPError, resp_body: bytes) -> None
         print_and_report("< no reponse")
         print_and_report("<")
         return
-    print_and_report(f"< {resp.status} {responses[resp.status]}")
+    print_and_report(f"< {resp.status} {responses.get(resp.status, '')}")
     for header_name, header_value in resp.getheaders():
         print_and_report(f"< {header_name}: {header_value}")
     if len(resp_body) > 0:
