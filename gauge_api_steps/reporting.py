@@ -42,9 +42,10 @@ def report_response_info(resp: HTTPResponse|HTTPError, resp_body: bytes) -> None
 
 
 def print_and_report(message: str) -> None:
-    replace_whitespace = os.environ.get("replace_whitespace_in_report")
+    replace_whitespace = os.environ.get("replace_whitespace_in_console")
+    console_message = message
     if replace_whitespace is not None:
-        message = message.replace(' ', replace_whitespace)
-        message = message.replace('\t', replace_whitespace * 4)
-    print(message)
-    Messages.write_message(message.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace(' ', '&nbsp;'))
+        console_message = console_message.replace(' ', replace_whitespace)
+        console_message = console_message.replace('\t', replace_whitespace * 4)
+    print(console_message)
+    Messages.write_message(message.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\t', '    ').replace(' ', '&nbsp;'))
