@@ -6,15 +6,19 @@ on:
   workflow_dispatch:
   release:
     types: [published]
+
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   upload:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: '3.10'
       - name: Install dependencies
@@ -25,4 +29,4 @@ jobs:
       - name: Build package
         run: python setup.py sdist bdist_wheel
       - name: Publish package
-        uses: pypa/gh-action-pypi-publish@v1.8.10
+        uses: pypa/gh-action-pypi-publish@2f6f737ca5f74c637829c0f5c3acd0e29ea5e8bf # v1.8.11

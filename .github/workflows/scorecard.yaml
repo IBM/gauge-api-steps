@@ -9,8 +9,8 @@ on:
     # Weekly on Saturdays.
     - cron: '30 1 * * 6'
   push:
-    branches: 
-    - dev
+    # only default branch is supported
+    branches: [ dev ]
   pull_request:
     branches: [ "*" ]
 
