@@ -9,15 +9,16 @@ import json
 import os
 import re
 
-from getgauge.python import data_store, step, after_scenario, before_scenario, ExecutionContext, Messages
+from getgauge.python import data_store, step, after_scenario, before_scenario, ExecutionContext
+from http.client import HTTPResponse
 from io import BytesIO
 from jsonpath_ng.ext import parse as parse_json_path
 from lxml import etree
 from typing import Any, Iterable
 from urllib.request import HTTPCookieProcessor, OpenerDirector, Request, build_opener
-from urllib.response import addinfourl as Response
 from urllib.error import HTTPError
 from .file_util import assert_file_is_in_project
+from .reporting import print_and_report, report_request_info, report_response_info
 from .session import load_session_properties, save_session_properties, store_in_session
 from .substitute import substitute
 
@@ -44,7 +45,7 @@ def beforescenario(context: ExecutionContext) -> None:
 @after_scenario
 def afterscenario(context: ExecutionContext) -> None:
     save_session_properties()
-    _print_and_report(f"after scenario {context}")
+    print_and_report(f"after scenario {context}")
 
 
 @step("Response CSRF header <header>")
@@ -79,7 +80,7 @@ def load_from_file(file_param, placeholder_param) -> None:
 @step("Print <message>")
 def print_message(message_param: str) -> None:
     message = substitute(message_param)
-    _print_and_report(message)
+    print_and_report(message)
 
 
 @step("Pretty print <json>")
@@ -87,44 +88,44 @@ def pretty_print(json_str_param: str) -> None:
     json_str = substitute(json_str_param)
     json_loaded = json.loads(json_str)
     pretty = json.dumps(json_loaded, indent=4)
-    _print_and_report(pretty)
+    print_and_report(pretty)
 
 
 @step("Print placeholders")
 def print_placeholders() -> None:
-    _print_and_report(f"Environment: \n{os.environ}")
-    _print_and_report(f"Data store: \n{data_store.scenario}")
+    print_and_report(f"Environment: \n{os.environ}")
+    print_and_report(f"Data store: \n{data_store.scenario}")
 
 
 @step("Print headers")
 def print_headers() -> None:
     headers: dict = data_store.scenario.get(sent_request_headers_key, {})
-    _print_and_report("Request headers:\n")
+    print_and_report("Request headers:\n")
     for header_name, header_value in headers.items():
-        _print_and_report(f"    {header_name}: {header_value}")
-    _print_and_report("Response headers:\n")
+        print_and_report(f"    {header_name}: {header_value}")
+    print_and_report("Response headers:\n")
     response_headers = data_store.scenario[response_key]["headers"]
     for header in response_headers:
-        _print_and_report(f"    {header[0]}: {header[1]}")
+        print_and_report(f"    {header[0]}: {header[1]}")
 
 
 @step("Print status")
 def print_status() -> None:
     status = data_store.scenario.get(response_key, {}).get("status")
-    _print_and_report(f"Response status:\n\n    {status}")
+    print_and_report(f"Response status:\n\n    {status}")
 
 
 @step("Print body")
 def print_body() -> None:
     body: bytes = data_store.scenario.get(response_key, {}).get("body")
-    _print_and_report("Response body:")
+    print_and_report("Response body:")
     if body is not None and len(body) > 0:
         try:
             json_loaded = json.loads(body.decode())
             pretty = json.dumps(json_loaded, indent=4)
-            _print_and_report(f"\n{pretty}".replace('\n', '\n    '))
+            print_and_report(f"\n{pretty}".replace('\n', '\n    '))
         except json.decoder.JSONDecodeError:
-            _print_and_report(body.decode())
+            print_and_report(body.decode())
 
 
 @step("Append to <file>: <value>")
@@ -169,10 +170,14 @@ def make_request(method_param: str, url_param: str) -> None:
         body = body.encode()
     req = Request(url=url, method=method, headers=headers, data=body)
     data_store.scenario[sent_request_headers_key] = req.headers
-    with _open(req) as resp:
+    report_request_info(req)
+    with _open(req) as r:
+        resp: HTTPResponse|HTTPError = r
         resp_headers = resp.getheaders()
+        resp_body = resp.read()
+        report_response_info(resp, resp_body)
         data_store.scenario[response_key] = {
-            "body": resp.read(),
+            "body": resp_body,
             "headers": resp_headers,
             "status": resp.status,
             "reason": resp.reason
@@ -363,7 +368,7 @@ def base64_decode(text_param: str, placeholder_param: str) -> None:
     store_in_session(placeholder, asString)
 
 
-def _open(req: Request) -> Response:
+def _open(req: Request) -> HTTPResponse|HTTPError:
     opener: OpenerDirector = data_store.scenario[opener_key]
     try:
         return opener.open(req)
@@ -446,12 +451,3 @@ def is_numeric(value: str) -> bool:
         return True
     except ValueError:
         return False
-
-
-def _print_and_report(message: str) -> None:
-    replace_whitespace = os.environ.get("replace_whitespace_in_report")
-    if replace_whitespace is not None:
-        message = message.replace(' ', replace_whitespace)
-        message = message.replace('\t', replace_whitespace * 4)
-    print(message)
-    Messages.write_message(message.replace('<', '&lt;'))

@@ -5,6 +5,8 @@ The following properties are supported:
 
 | Property | Type | Default | Description |
 |--|--|--|--|
+| `report_request` | bool | `false` | Print request information into the console and report. |
+| `report_response` | bool | `false` | Print response information into the console and report. |
 | `lenient_json_str_comparison` | bool | `false` | JSON strings have double quotes `"`. If this flag is set to `true`, the double quotes are optional for string comparisons. Thus, it would be possible to write: `* Assert jsonpath "$.text" = "text content"` instead of `* Assert jsonpath "$.text" = "\"text content\""` |
-| `replace_whitespace_in_report` | string | `None` | The HTML report will cut multiple whitespace characters as well as leading and trailing whitespaces. This library cannot prevent that, but it can replace whitespace, f.i. by setting `replace_whitespace_in_report = •` |
+| `replace_whitespace_in_console` | string | `None` | The console and log output will cut multiple whitespace characters as well as leading and trailing whitespaces. This library cannot prevent that, but it can replace whitespace, f.i. by setting `replace_whitespace_in_console = •` |
 | `session_properties` | string | `env/default/session.properties` | Session properties will be persisted in this file. They are then available over multiple test runs. This applies to:  <ul><li>`key`-parameters in steps, that look like "Store .. as \<key>" or "Save .. as \<key>"</li><li>CSRF response header values</li></ul> |
