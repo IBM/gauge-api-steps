@@ -5,6 +5,10 @@ name: Test
 on:
   pull_request:
     branches: [ "*" ]
+
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   test:
     runs-on: macos-latest
@@ -12,7 +16,7 @@ jobs:
       matrix:
         python-version: [ "3.10" ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
