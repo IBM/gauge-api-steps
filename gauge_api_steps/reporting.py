@@ -54,10 +54,10 @@ def print_and_report(message: str) -> None:
 
 
 def _mask_secrets(message: str) -> str:
-    secret_props_prop = os.environ.get("mask_secrets")
-    if not secret_props_prop:
+    mask_secrets_prop = os.environ.get("mask_secrets")
+    if not mask_secrets_prop:
         return message
-    secret_props = re.split(r'[\s,;]+', secret_props_prop)
+    secret_props = re.split(r'[\s,;]+', mask_secrets_prop)
     secret_values = []
     for prop in secret_props:
         value = os.environ.get(prop)
