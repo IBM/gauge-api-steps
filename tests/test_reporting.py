@@ -30,6 +30,19 @@ class TestReporting(unittest.TestCase):
         self.assertEqual([call("abc"), call("a-b"), call("a----b"), call("<>")], mock_print.mock_calls)
         self.assertEqual(["abc", "a&nbsp;b", "a&nbsp;&nbsp;&nbsp;&nbsp;b", "&lt;&gt;"], MessagesStore.pending_messages())
 
+    def test_print_and_report__masking_secrets(self):
+        with patch('builtins.print') as mock_print, patch('os.environ', {
+            "mask_secrets": "sec,, sec1;sec2  sec3",
+            "sec": "aaa",
+            "sec1": "bbb",
+            "sec2": "ccc",
+            "sec3": "ddd"
+        }):
+            print_and_report("something aaa bbb ccc ddd")
+        expected = "something ******** ******** ******** ********"
+        self.assertEqual([call(expected)], mock_print.mock_calls)
+        self.assertEqual([expected.replace(' ', '&nbsp;')], MessagesStore.pending_messages())
+
     def test_report_request_info(self):
         req = Request(url="http://localhost", method="POST", headers={"Content-Type": "image/png"}, data=b"abc\ndef")
         with patch('builtins.print') as mock_print, patch('os.environ', {"report_request": "true"}):
