@@ -9,6 +9,7 @@ import json
 import os
 import re
 
+from diff_match_patch import diff_match_patch
 from getgauge.python import data_store, step, after_scenario, before_scenario, ExecutionContext
 from http.client import HTTPResponse
 from io import BytesIO
@@ -296,11 +297,12 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
     value = substitute(json_value_param)
     match = _find_jsonpath_match_in_response(jsonpath)
     if os.environ.get("lenient_json_str_comparison", "false").lower() in ("true", "1"):
-        if (not value.strip().startswith(('[', '{', '"',))) and (not is_numeric(value.strip())):
+        if (not value.strip().startswith(('[', '{', '"',))) and (not is_numeric(value.strip())) and (value.strip() not in ('null','true','false',)):
             value  = f'"{value}"'
     value_json = json.loads(value)
-    assert match == value_json, \
-        f"Assertion failed: Expected value '{value}' does not match '{match}'"
+    if match != value_json:
+        diff = _diff_json(match, value_json)
+        raise AssertionError(f"Assertion failed: Expected value does not match:\n{diff}")
 
 
 @step("Assert xpath <xpath> = <xml_value>")
@@ -392,6 +394,24 @@ def _find_jsonpath_matches_in_response(jsonpath: str) -> Iterable[Any]:
     jsonpath_expression = parse_json_path(jsonpath)
     match = jsonpath_expression.find(resp_json)
     return match
+
+
+def _diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
+    match_str = json.dumps(match_json, indent=4, sort_keys=True)
+    expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
+    dmp = diff_match_patch()
+    a = dmp.diff_linesToChars(match_str, expected_str)
+    diffs = dmp.diff_main(a[0], a[1], False)
+    dmp.diff_charsToLines(diffs, a[2])
+    line_prefixes = {dmp.DIFF_DELETE: '-', dmp.DIFF_EQUAL: ' ', dmp.DIFF_INSERT: '+'}
+    lines = []
+    for d in diffs:
+        print(f"{d}")
+        prefix_key = d[0]
+        prefix = line_prefixes[prefix_key]
+        line = d[1].removesuffix('\n').replace('\n', f'\n{prefix}')
+        lines.append(f"{prefix}{line}")
+    return '\n'.join(lines)
 
 
 def _find_xpath_match_in_response(xpath: str) -> etree._Element | str | int | float:

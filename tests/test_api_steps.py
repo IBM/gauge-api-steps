@@ -11,6 +11,7 @@ import unittest
 from getgauge.python import data_store
 from unittest.mock import Mock, mock_open, patch
 from tests import TEST_DIR, TEST_RESOURCES_DIR, TEST_OUT_DIR
+from textwrap import dedent
 from gauge_api_steps.api_steps import (
     opener_key, body_key, response_key, sent_request_headers_key,
     add_body, append_to_file, assert_response_jsonpath_equals, base64_decode, base64_encode, beforescenario, load_from_file, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
@@ -99,8 +100,60 @@ class TestApiSteps(unittest.TestCase):
 
     def test_assert_response_jsonpath_equals_with_lenient_json_str(self):
         os.environ["lenient_json_str_comparison"] = "True"
-        data_store.scenario[response_key] = {'body': '{"a": {"b": "value"}}'.encode()}
-        assert_response_jsonpath_equals("$.a.b", "value")
+        body = """{
+          "a": {
+            "b": "value"
+          },
+          "b": null,
+          "c": 1,
+          "d": true,
+          "e": false,
+          "f": []
+        }"""
+        data_store.scenario[response_key] = {"body": body.encode()}
+        params = [("$.a.b", "value",), ("$.a.b", '"value"',), ("$.b", "null",), ("$.c", "1",), ("$.d", "true",), ("$.e", "false",), ("$.f", "[]",)]
+        for json_path, value in params:
+            with self.subTest(json_path=json_path, value=value):
+                assert_response_jsonpath_equals(json_path, value)
+        # TODO: check (true, false, null, {, [, ", float, int) are not quoted
+
+    def test_assert_response_jsonpath_equals_fails_and_shows_diff(self):
+        response = """
+        {
+          "a": "a",
+          "b": 1,
+          "c": [
+            1, 2, 3
+          ]
+        }
+        """
+        expected = """
+        {
+          "a": "a",
+          "b": 2,
+          "c": [
+            1, 2, 3, 4
+          ]
+        }
+        """
+        diff = dedent("""
+        Assertion failed: Expected value does not match:
+         {
+             "a": "a",
+        -    "b": 1,
+        +    "b": 2,
+             "c": [
+                 1,
+                 2,
+        -        3
+        +        3,
+        +        4
+             ]
+         }""")[1:]
+        data_store.scenario[response_key] = {'body': response.encode()}
+        with self.assertRaises(AssertionError) as ac:
+            assert_response_jsonpath_equals("$", expected)
+        self.assertEqual(diff, str(ac.exception))
 
     def test_save_file(self):
         body = b'abc'

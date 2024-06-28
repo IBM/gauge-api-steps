@@ -19,6 +19,7 @@ setup(
     license='MIT',
     packages=['gauge_api_steps'],
     install_requires=[
+        'diff-match-patch==20230430',
         'getgauge',
         'jsonpath-ng==1.6.1',
         'lxml==5.2.1',
