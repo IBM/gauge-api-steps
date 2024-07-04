@@ -302,7 +302,8 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
     value_json = json.loads(value)
     if match != value_json:
         diff = _diff_json(match, value_json)
-        raise AssertionError(f"Assertion failed: Expected value does not match:\n{diff}")
+        print_and_report(diff)
+        raise AssertionError(f"Assertion failed: Expected value does not match")
 
 
 @step("Assert xpath <xpath> = <xml_value>")
@@ -406,7 +407,6 @@ def _diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: boo
     line_prefixes = {dmp.DIFF_DELETE: '-', dmp.DIFF_EQUAL: ' ', dmp.DIFF_INSERT: '+'}
     lines = []
     for d in diffs:
-        print(f"{d}")
         prefix_key = d[0]
         prefix = line_prefixes[prefix_key]
         line = d[1].removesuffix('\n').replace('\n', f'\n{prefix}')
