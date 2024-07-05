@@ -137,7 +137,6 @@ class TestApiSteps(unittest.TestCase):
         }
         """
         diff = dedent("""
-        Assertion failed: Expected value does not match:
          {
              "a": "a",
         -    "b": 1,
@@ -149,11 +148,12 @@ class TestApiSteps(unittest.TestCase):
         +        3,
         +        4
              ]
-         }""")[1:]
+         }
+        """)[1:]
         data_store.scenario[response_key] = {'body': response.encode()}
-        with self.assertRaises(AssertionError) as ac:
-            assert_response_jsonpath_equals("$", expected)
-        self.assertEqual(diff, str(ac.exception))
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            self.assertRaises(AssertionError, lambda: assert_response_jsonpath_equals("$", expected))
+            self.assertEqual(diff, buf.getvalue())
 
     def test_save_file(self):
         body = b'abc'
