@@ -303,7 +303,7 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
     if match != value_json:
         diff = _diff_json(match, value_json)
         print_and_report(diff)
-        raise AssertionError(f"Assertion failed: Expected value does not match")
+        raise AssertionError("Assertion failed: Expected value does not match")
 
 
 @step("Assert xpath <xpath> = <xml_value>")
@@ -322,7 +322,7 @@ def assert_response_xpath_equals(xpath_param: str, xml_value_param: str) -> None
         equal = match == value
     if not equal:
         print_and_report(f"Expected:\n{value}\nGot:\n{match_str}")
-        raise AssertionError(f"Assertion failed: Expected value does not match")
+        raise AssertionError("Assertion failed: Expected value does not match")
 
 
 @step("Save jsonpath <jsonpath> as <key>")
