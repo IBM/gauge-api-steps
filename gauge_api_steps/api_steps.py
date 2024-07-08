@@ -301,7 +301,8 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
             value  = f'"{value}"'
     value_json = json.loads(value)
     if match != value_json:
-        diff = _diff_json(match, value_json)
+        diff = _colored_diff_json(match, value_json)
+        #diff = _diff_json(match, value_json)
         print_and_report(diff)
         raise AssertionError("Assertion failed: Expected value does not match")
 
@@ -396,6 +397,28 @@ def _find_jsonpath_matches_in_response(jsonpath: str) -> Iterable[Any]:
     jsonpath_expression = parse_json_path(jsonpath)
     match = jsonpath_expression.find(resp_json)
     return match
+
+
+def _colored_diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
+    #match_str = json.dumps(match_json, indent=4, sort_keys=True)
+    #expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
+    from prettydiff import diff_json, get_annotated_lines_from_diff, Flag
+    from colorama import Fore, Style
+    indent_size = 2
+    lines = get_annotated_lines_from_diff(diff_json(match_json, expected_json))
+    ret = []
+    for line in lines:
+        if Flag.ADDED in line.flags:
+            flags = f"{Fore.GREEN}+ "
+        elif Flag.REMOVED in line.flags:
+            flags = f"{Fore.RED}- "
+        else:
+            flags = "  "
+        l = flags + " " * (indent_size * line.indent)
+        if flags != "  ":
+            l = l + f"{Style.RESET_ALL}"
+        ret.append(l)
+    return "\n".join(ret)
 
 
 def _diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
