@@ -25,6 +25,7 @@ setup(
         'lxml==5.2.1',
         'numexpr==2.10.0',
         'prettydiff==0.1.0',
+        'colorama==0.4.6',
     ],
     zip_safe=False
 )

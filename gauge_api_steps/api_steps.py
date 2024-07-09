@@ -303,6 +303,8 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
     if match != value_json:
         diff = _colored_diff_json(match, value_json)
         #diff = _diff_json(match, value_json)
+        #from getgauge.python import Messages
+        #Messages.write_message(diff)
         print_and_report(diff)
         raise AssertionError("Assertion failed: Expected value does not match")
 
@@ -403,7 +405,7 @@ def _colored_diff_json(match_json: bool|int|float|str|list|dict|None, expected_j
     #match_str = json.dumps(match_json, indent=4, sort_keys=True)
     #expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
     from prettydiff import diff_json, get_annotated_lines_from_diff, Flag
-    from colorama import Fore, Style
+    from colorama import Fore
     indent_size = 2
     lines = get_annotated_lines_from_diff(diff_json(match_json, expected_json))
     ret = []
@@ -415,8 +417,31 @@ def _colored_diff_json(match_json: bool|int|float|str|list|dict|None, expected_j
         else:
             flags = "  "
         l = flags + " " * (indent_size * line.indent)
+        l = l + line.s
         if flags != "  ":
-            l = l + f"{Style.RESET_ALL}"
+            l = l + f"{Fore.RESET}"
+        ret.append(l)
+        #print_and_report(l)
+    return "\n".join(ret)
+
+
+def _colored_diff_json_html(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
+    #match_str = json.dumps(match_json, indent=4, sort_keys=True)
+    #expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
+    from prettydiff import diff_json, get_annotated_lines_from_diff, Flag
+    indent_size = 2
+    lines = get_annotated_lines_from_diff(diff_json(match_json, expected_json))
+    ret = []
+    for line in lines:
+        if Flag.ADDED in line.flags:
+            flags = '<span style="color:green">+ '
+        elif Flag.REMOVED in line.flags:
+            flags = '<span style="color:red">- '
+        else:
+            flags = '<span>  '
+        l = flags + " " * (indent_size * line.indent)
+        l = l + line.s
+        l = l + "</span>"
         ret.append(l)
     return "\n".join(ret)
 
