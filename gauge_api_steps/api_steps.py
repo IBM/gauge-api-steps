@@ -9,6 +9,7 @@ import json
 import os
 import re
 
+from colorama import Fore
 from diff_match_patch import diff_match_patch
 from getgauge.python import data_store, step, after_scenario, before_scenario, ExecutionContext
 from http.client import HTTPResponse
@@ -301,10 +302,7 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
             value  = f'"{value}"'
     value_json = json.loads(value)
     if match != value_json:
-        diff = _colored_diff_json(match, value_json)
-        #diff = _diff_json(match, value_json)
-        #from getgauge.python import Messages
-        #Messages.write_message(diff)
+        diff = _diff_json(match, value_json)
         print_and_report(diff)
         raise AssertionError("Assertion failed: Expected value does not match")
 
@@ -401,51 +399,6 @@ def _find_jsonpath_matches_in_response(jsonpath: str) -> Iterable[Any]:
     return match
 
 
-def _colored_diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
-    #match_str = json.dumps(match_json, indent=4, sort_keys=True)
-    #expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
-    from prettydiff import diff_json, get_annotated_lines_from_diff, Flag
-    from colorama import Fore
-    indent_size = 2
-    lines = get_annotated_lines_from_diff(diff_json(match_json, expected_json))
-    ret = []
-    for line in lines:
-        if Flag.ADDED in line.flags:
-            flags = f"{Fore.GREEN}+ "
-        elif Flag.REMOVED in line.flags:
-            flags = f"{Fore.RED}- "
-        else:
-            flags = "  "
-        l = flags + " " * (indent_size * line.indent)
-        l = l + line.s
-        if flags != "  ":
-            l = l + f"{Fore.RESET}"
-        ret.append(l)
-        #print_and_report(l)
-    return "\n".join(ret)
-
-
-def _colored_diff_json_html(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
-    #match_str = json.dumps(match_json, indent=4, sort_keys=True)
-    #expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
-    from prettydiff import diff_json, get_annotated_lines_from_diff, Flag
-    indent_size = 2
-    lines = get_annotated_lines_from_diff(diff_json(match_json, expected_json))
-    ret = []
-    for line in lines:
-        if Flag.ADDED in line.flags:
-            flags = '<span style="color:green">+ '
-        elif Flag.REMOVED in line.flags:
-            flags = '<span style="color:red">- '
-        else:
-            flags = '<span>  '
-        l = flags + " " * (indent_size * line.indent)
-        l = l + line.s
-        l = l + "</span>"
-        ret.append(l)
-    return "\n".join(ret)
-
-
 def _diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
     match_str = json.dumps(match_json, indent=4, sort_keys=True)
     expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
@@ -453,13 +406,16 @@ def _diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: boo
     a = dmp.diff_linesToChars(match_str, expected_str)
     diffs = dmp.diff_main(a[0], a[1], False)
     dmp.diff_charsToLines(diffs, a[2])
-    line_prefixes = {dmp.DIFF_DELETE: '-', dmp.DIFF_EQUAL: ' ', dmp.DIFF_INSERT: '+'}
+    line_prefixes = {dmp.DIFF_DELETE: f'{Fore.RED}- ', dmp.DIFF_EQUAL: '  ', dmp.DIFF_INSERT: f'{Fore.GREEN}+ '}
+    line_suffixes = {dmp.DIFF_DELETE: f'{Fore.RESET}', dmp.DIFF_EQUAL: '', dmp.DIFF_INSERT: f'{Fore.RESET}'}
     lines = []
     for d in diffs:
         prefix_key = d[0]
         prefix = line_prefixes[prefix_key]
-        line = d[1].removesuffix('\n').replace('\n', f'\n{prefix}')
-        lines.append(f"{prefix}{line}")
+        suffix = line_suffixes[prefix_key]
+        diff_lines = d[1].removesuffix('\n').split('\n')
+        for line in diff_lines:
+            lines.append(f"{prefix}{line}{suffix}")
     return '\n'.join(lines)
 
 

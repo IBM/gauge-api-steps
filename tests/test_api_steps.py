@@ -8,10 +8,10 @@ import io
 import os
 import unittest
 
+from colorama import Fore
 from getgauge.python import data_store
 from unittest.mock import Mock, mock_open, patch
 from tests import TEST_DIR, TEST_RESOURCES_DIR, TEST_OUT_DIR
-from textwrap import dedent
 from gauge_api_steps.api_steps import (
     opener_key, body_key, response_key, sent_request_headers_key,
     add_body, append_to_file, assert_response_jsonpath_equals, base64_decode, base64_encode, beforescenario, load_from_file, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
@@ -136,20 +136,19 @@ class TestApiSteps(unittest.TestCase):
           ]
         }
         """
-        diff = dedent("""
-         {
-             "a": "a",
-        -    "b": 1,
-        +    "b": 2,
-             "c": [
-                 1,
-                 2,
-        -        3
-        +        3,
-        +        4
-             ]
-         }
-        """)[1:]
+        diff = '\n'.join((
+            '  {',
+            '      "a": "a",',
+            f'{Fore.RED}-     "b": 1,{Fore.RESET}',
+            f'{Fore.GREEN}+     "b": 2,{Fore.RESET}',
+            '      "c": [',
+            '          1,',
+            '          2,',
+            f'{Fore.RED}-         3{Fore.RESET}',
+            f'{Fore.GREEN}+         3,{Fore.RESET}',
+            f'{Fore.GREEN}+         4{Fore.RESET}',
+            '      ]',
+            '  }\n',))
         data_store.scenario[response_key] = {'body': response.encode()}
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
             self.assertRaises(AssertionError, lambda: assert_response_jsonpath_equals("$", expected))
