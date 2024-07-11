@@ -5,6 +5,7 @@
 
 import unittest
 
+from colorama import Fore
 from http.client import HTTPResponse
 from getgauge.registry import MessagesStore
 from textwrap import dedent
@@ -27,8 +28,9 @@ class TestReporting(unittest.TestCase):
             print_and_report("a b")
             print_and_report("a\tb")
             print_and_report("<>")
-        self.assertEqual([call("abc"), call("a-b"), call("a----b"), call("<>")], mock_print.mock_calls)
-        self.assertEqual(["abc", "a&nbsp;b", "a&nbsp;&nbsp;&nbsp;&nbsp;b", "&lt;&gt;"], MessagesStore.pending_messages())
+            print_and_report(f"{Fore.BLUE}BLUE{Fore.RESET}")
+        self.assertEqual([call("abc"), call("a-b"), call("a----b"), call("<>"), call(f"{Fore.BLUE}BLUE{Fore.RESET}")], mock_print.mock_calls)
+        self.assertEqual(["abc", "a&nbsp;b", "a&nbsp;&nbsp;&nbsp;&nbsp;b", "&lt;&gt;", "BLUE"], MessagesStore.pending_messages())
 
     def test_print_and_report__masking_secrets(self):
         with patch('builtins.print') as mock_print, patch('os.environ', {
