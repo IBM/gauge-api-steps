@@ -43,7 +43,7 @@ def report_response_info(resp: HTTPResponse|HTTPError, resp_body: bytes) -> None
 
 
 def print_and_report(message: str) -> None:
-    masked_message = _mask_secrets(message)
+    masked_message = mask_secrets(message)
     replace_whitespace = os.environ.get("replace_whitespace_in_console")
     console_message = masked_message
     if replace_whitespace is not None:
@@ -53,7 +53,7 @@ def print_and_report(message: str) -> None:
     Messages.write_message(masked_message.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\t', '    ').replace(' ', '&nbsp;'))
 
 
-def _mask_secrets(message: str) -> str:
+def mask_secrets(message: str) -> str:
     mask_secrets_prop = os.environ.get("mask_secrets")
     if not mask_secrets_prop:
         return message

@@ -9,6 +9,7 @@ import json
 import os
 import re
 
+from diff_match_patch import diff_match_patch
 from getgauge.python import data_store, step, after_scenario, before_scenario, ExecutionContext
 from http.client import HTTPResponse
 from io import BytesIO
@@ -196,8 +197,8 @@ def assert_response_status(status_code_param: str) -> None:
     status_code = int(status_code_str)
     response = data_store.scenario[response_key]
     actual = response['status']
-    assert status_code == actual, \
-        f"Assertion failed: Expected status code {status_code}, got {actual} - {response['reason']}\n{response['body']}"
+    if status_code != actual:
+        raise AssertionError(f"Assertion failed: Expected status code {status_code}, got {actual} - {response['reason']}\n{response['body']}")
 
 
 @step("Assert header <header>: <value>")
@@ -219,7 +220,7 @@ def assert_header(header_param: str, value_param: str) -> None:
             header_value = header_value.strip()
             if expected_value == header_value:
                 return
-    raise AssertionError (f"Assertion failed: Expected header {expected_header}: {expected_value} not found")
+    raise AssertionError(f"Assertion failed: Expected header {expected_header}: {expected_value} not found")
 
 
 @step("Assert jsonpath <jsonpath> exists")
@@ -257,8 +258,8 @@ def assert_response_jsonpath_contains(jsonpath_param: str, text_param: str) -> N
     jsonpath = substitute(jsonpath_param)
     text = substitute(text_param)
     match = _find_jsonpath_match_in_response(jsonpath)
-    assert text in str(match), \
-        f"Assertion failed: Expected text '{text}' not found in '{match}'"
+    if text not in str(match):
+        raise AssertionError(f"Assertion failed: Expected text '{text}' not found in '{match}'")
 
 
 @step("Assert xpath <xpath> contains <text>")
@@ -267,8 +268,8 @@ def assert_response_xpath_contains(xpath_param: str, text_param: str) -> None:
     text = substitute(text_param)
     match = _find_xpath_match_in_response(xpath)
     match_str = _text_from_xml(match)
-    assert text in match_str, \
-        f"Assertion failed: Expected text '{text}' not found in '{match_str}'"
+    if text not in match_str:
+        raise AssertionError(f"Assertion failed: Expected text '{text}' not found in '{match_str}'")
 
 
 @step("Assert jsonpath <jsonpath> does not contain <text>")
@@ -276,8 +277,8 @@ def assert_response_jsonpath_does_not_contain(jsonpath_param: str, text_param: s
     jsonpath = substitute(jsonpath_param)
     text = substitute(text_param)
     match = _find_jsonpath_match_in_response(jsonpath)
-    assert text not in str(match), \
-        f"Assertion failed: Text '{text}' was found in '{match}'"
+    if text in str(match):
+        raise AssertionError(f"Assertion failed: Text '{text}' was found in '{match}'")
 
 
 @step("Assert xpath <xpath> does not contain <text>")
@@ -286,8 +287,8 @@ def assert_response_xpath_does_not_contain(xpath_param: str, text_param: str) ->
     text = substitute(text_param)
     match = _find_xpath_match_in_response(xpath)
     match_str = _text_from_xml(match)
-    assert text not in match_str, \
-        f"Assertion failed: Text '{text}' was found in '{match_str}'"
+    if text in match_str:
+        raise AssertionError(f"Assertion failed: Text '{text}' was found in '{match_str}'")
 
 
 @step("Assert jsonpath <jsonpath> = <json_value>")
@@ -296,11 +297,13 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
     value = substitute(json_value_param)
     match = _find_jsonpath_match_in_response(jsonpath)
     if os.environ.get("lenient_json_str_comparison", "false").lower() in ("true", "1"):
-        if (not value.strip().startswith(('[', '{', '"',))) and (not is_numeric(value.strip())):
+        if (not value.strip().startswith(('[', '{', '"',))) and (not is_numeric(value.strip())) and (value.strip() not in ('null','true','false',)):
             value  = f'"{value}"'
     value_json = json.loads(value)
-    assert match == value_json, \
-        f"Assertion failed: Expected value '{value}' does not match '{match}'"
+    if match != value_json:
+        diff = _diff_json(match, value_json)
+        print_and_report(diff)
+        raise AssertionError("Assertion failed: Expected value does not match")
 
 
 @step("Assert xpath <xpath> = <xml_value>")
@@ -317,8 +320,9 @@ def assert_response_xpath_equals(xpath_param: str, xml_value_param: str) -> None
         match = _text_from_xml(match)
         match_str = match
         equal = match == value
-    assert equal, \
-        f"Assertion failed: Expected value '{value}' does not match '{match_str}'"
+    if not equal:
+        print_and_report(f"Expected:\n{value}\nGot:\n{match_str}")
+        raise AssertionError("Assertion failed: Expected value does not match")
 
 
 @step("Save jsonpath <jsonpath> as <key>")
@@ -378,10 +382,10 @@ def _open(req: Request) -> HTTPResponse|HTTPError:
 
 def _find_jsonpath_match_in_response(jsonpath: str) -> Any:
     matches = _find_jsonpath_matches_in_response(jsonpath)
-    assert len(matches) > 0, \
-        f"Assertion failed: No value found at {jsonpath} in {data_store.scenario[response_key]['body'].decode()}"
-    assert len(matches) == 1, \
-        f"Assertion failed: multiple matches for {jsonpath} in {data_store.scenario[response_key]['body'].decode()}"
+    if len(matches) == 0:
+        raise AssertionError(f"Assertion failed: No value found at {jsonpath} in {data_store.scenario[response_key]['body'].decode()}")
+    if len(matches) > 1:
+        raise AssertionError(f"Assertion failed: multiple matches for {jsonpath} in {data_store.scenario[response_key]['body'].decode()}")
     return matches[0].value
 
 
@@ -394,12 +398,29 @@ def _find_jsonpath_matches_in_response(jsonpath: str) -> Iterable[Any]:
     return match
 
 
+def _diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
+    match_str = json.dumps(match_json, indent=4, sort_keys=True)
+    expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
+    dmp = diff_match_patch()
+    a = dmp.diff_linesToChars(match_str, expected_str)
+    diffs = dmp.diff_main(a[0], a[1], False)
+    dmp.diff_charsToLines(diffs, a[2])
+    line_prefixes = {dmp.DIFF_DELETE: '-', dmp.DIFF_EQUAL: ' ', dmp.DIFF_INSERT: '+'}
+    lines = []
+    for d in diffs:
+        prefix_key = d[0]
+        prefix = line_prefixes[prefix_key]
+        line = d[1].removesuffix('\n').replace('\n', f'\n{prefix}')
+        lines.append(f"{prefix}{line}")
+    return '\n'.join(lines)
+
+
 def _find_xpath_match_in_response(xpath: str) -> etree._Element | str | int | float:
     matches = _find_xpath_matches_in_response(xpath)
-    assert len(matches) > 0, \
-        f"Assertion failed: No value found at {xpath} in {data_store.scenario[response_key]['body'].decode()}"
-    assert len(matches) == 1, \
-        f"Assertion failed: multiple matches for {xpath} in {data_store.scenario[response_key]['body'].decode()}"
+    if len(matches) == 0:
+        raise AssertionError(f"Assertion failed: No value found at {xpath} in {data_store.scenario[response_key]['body'].decode()}")
+    if len(matches) > 1:
+        raise AssertionError(f"Assertion failed: multiple matches for {xpath} in {data_store.scenario[response_key]['body'].decode()}")
     return matches[0]
 
 
@@ -424,8 +445,10 @@ def _clear_namespaces(elem: etree._Element) -> None:
 def _eval_matches_length(matches: int, expr: str) -> None:
     full_expr = f"{matches}{expr}"
     result = numexpr.evaluate(full_expr).tolist()
-    assert isinstance(result, bool), f"'{full_expr} = {result}' is not a boolean expression"
-    assert result is True, f"found {matches} matches, which is not {expr}"
+    if not isinstance(result, bool):
+        raise AssertionError(f"'{full_expr} = {result}' is not a boolean expression")
+    if result is False:
+        raise AssertionError(f"found {matches} matches, which is not {expr}")
 
 
 def _text_from_xml(match: etree._Element | str | int | float) -> str:
