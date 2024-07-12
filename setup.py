@@ -24,6 +24,7 @@ setup(
         'jsonpath-ng==1.6.1',
         'lxml==5.2.1',
         'numexpr==2.10.0',
+        'colorama==0.4.6',
     ],
     zip_safe=False
 )

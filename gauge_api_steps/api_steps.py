@@ -9,6 +9,7 @@ import json
 import os
 import re
 
+from colorama import Fore
 from diff_match_patch import diff_match_patch
 from getgauge.python import data_store, step, after_scenario, before_scenario, ExecutionContext
 from http.client import HTTPResponse
@@ -405,13 +406,16 @@ def _diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: boo
     a = dmp.diff_linesToChars(match_str, expected_str)
     diffs = dmp.diff_main(a[0], a[1], False)
     dmp.diff_charsToLines(diffs, a[2])
-    line_prefixes = {dmp.DIFF_DELETE: '-', dmp.DIFF_EQUAL: ' ', dmp.DIFF_INSERT: '+'}
+    line_prefixes = {dmp.DIFF_DELETE: f'{Fore.RED}- ', dmp.DIFF_EQUAL: '  ', dmp.DIFF_INSERT: f'{Fore.GREEN}+ '}
+    line_suffixes = {dmp.DIFF_DELETE: f'{Fore.RESET}', dmp.DIFF_EQUAL: '', dmp.DIFF_INSERT: f'{Fore.RESET}'}
     lines = []
     for d in diffs:
         prefix_key = d[0]
         prefix = line_prefixes[prefix_key]
-        line = d[1].removesuffix('\n').replace('\n', f'\n{prefix}')
-        lines.append(f"{prefix}{line}")
+        suffix = line_suffixes[prefix_key]
+        diff_lines = d[1].removesuffix('\n').split('\n')
+        for line in diff_lines:
+            lines.append(f"{prefix}{line}{suffix}")
     return '\n'.join(lines)
 
 

@@ -50,7 +50,14 @@ def print_and_report(message: str) -> None:
         console_message = console_message.replace(' ', replace_whitespace)
         console_message = console_message.replace('\t', replace_whitespace * 4)
     print(console_message)
-    Messages.write_message(masked_message.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('\t', '    ').replace(' ', '&nbsp;'))
+    html_message = masked_message.replace('&', '&amp;')\
+            .replace('<', '&lt;')\
+            .replace('>', '&gt;')\
+            .replace('\t', '    ')\
+            .replace(' ', '&nbsp;')
+    # Replacing Ansi color codes. Unfortunately, the HTML report cannot handle colors defined by CSS, either
+    html_message = re.sub(r'\033\[[0-9]{1,2}m', "", html_message)
+    Messages.write_message(html_message)
 
 
 def mask_secrets(message: str) -> str:
