@@ -4,6 +4,7 @@
 #
 
 import base64
+from types import NoneType
 import numexpr
 import json
 import os
@@ -324,6 +325,30 @@ def assert_response_xpath_equals(xpath_param: str, xml_value_param: str) -> None
     if not equal:
         print_and_report(f"Expected:\n{value}\nGot:\n{match_str}")
         raise AssertionError("Assertion failed: Expected value does not match")
+
+
+@step("Assert jsonpath <jsonpath> type <type>")
+def assert_response_jsonpath_type(jsonpath_param: str, json_type_param: str) -> None:
+    jsonpath = substitute(jsonpath_param)
+    json_type = substitute(json_type_param).lower()
+    python_types = {
+        "boolean": bool,
+        "number": float,
+        "integer": int,
+        "string": str,
+        "null": NoneType,
+        "object": dict,
+        "array": list,
+    }
+    python_type = python_types.get(json_type)
+    if python_type is None:
+        raise AssertionError(f"{json_type} is not a valid type. Valid: {', '.join(python_types.keys())}")
+    match = _find_jsonpath_match_in_response(jsonpath)
+    if not isinstance(match, python_type):
+        actual_type = type(match).__name__
+        match_str = json.dumps(match)
+        match_str_short = match_str[0:60] if len(match_str) <= 60 else f"{match_str[0:60]}..."
+        raise AssertionError(f"Assertion failed: {match_str_short} is of type {actual_type}, not {json_type}")
 
 
 @step("Save jsonpath <jsonpath> as <key>")
