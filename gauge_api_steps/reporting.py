@@ -21,7 +21,7 @@ def report_request_info(req: Request) -> None:
         print_and_report(f"> {header_name}: {header_value}")
     if req.data is not None:
         print_and_report(">")
-        print_and_report(f"> {req.data.decode()}")
+        print_and_report(f"> {req.data.decode('unicode_escape')}")
     print_and_report(">")
 
 
@@ -38,7 +38,7 @@ def report_response_info(resp: HTTPResponse|HTTPError, resp_body: bytes) -> None
         print_and_report(f"< {header_name}: {header_value}")
     if len(resp_body) > 0:
         print_and_report("<")
-        print_and_report(f"< {resp_body.decode()}")
+        print_and_report(f"< {resp_body.decode('unicode_escape')}")
     print_and_report("<")
 
 
