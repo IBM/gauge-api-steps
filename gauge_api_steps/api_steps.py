@@ -126,8 +126,8 @@ def print_body() -> None:
             json_loaded = json.loads(body.decode())
             pretty = json.dumps(json_loaded, indent=4)
             print_and_report(f"\n{pretty}".replace('\n', '\n    '))
-        except json.decoder.JSONDecodeError:
-            print_and_report(body.decode())
+        except (json.decoder.JSONDecodeError, UnicodeDecodeError):
+            print_and_report(body.decode('unicode_escape'))
 
 
 @step("Append to <file>: <value>")
