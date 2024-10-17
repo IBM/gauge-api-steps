@@ -14,7 +14,9 @@ from unittest.mock import Mock, mock_open, patch
 from tests import TEST_DIR, TEST_RESOURCES_DIR, TEST_OUT_DIR
 from gauge_api_steps.api_steps import (
     opener_key, body_key, response_key, sent_request_headers_key,
-    add_body, append_to_file, assert_response_jsonpath_equals, base64_decode, base64_encode, beforescenario, load_from_file, pretty_print, print_headers, print_status, print_body, save_file, simulate_response,
+    add_body, append_to_file, assert_response_jsonpath_equals, assert_response_jsonpath_type, assert_response_xpath_type,
+    base64_decode, base64_encode, beforescenario, load_from_file, pretty_print, print_headers, print_status, print_body,
+    save_file, simulate_response,
 )
 
 
@@ -153,6 +155,76 @@ class TestApiSteps(unittest.TestCase):
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
             self.assertRaises(AssertionError, lambda: assert_response_jsonpath_equals("$", expected))
             self.assertEqual(diff, buf.getvalue())
+
+    def test_assert_response_jsonpath_type(self):
+        response = """
+        {
+          "integer": 2,
+          "number": 1.1,
+          "boolean": true,
+          "string": "a string",
+          "null": null,
+          "array": [],
+          "object": {}
+        }
+        """
+        data_store.scenario[response_key] = {'body': response.encode()}
+        params = ["integer", "number", "boolean", "string", "null", "array", "object"]
+        for json_type in params:
+            jsonpath = f"$.{json_type}"
+            with self.subTest(jsonpath=jsonpath, json_type=json_type):
+                assert_response_jsonpath_type(jsonpath, json_type)
+
+    def test_assert_response_jsonpath_type__fails(self):
+        response = """
+        {
+          "number": 1.1
+        }
+        """
+        data_store.scenario[response_key] = {'body': response.encode()}
+        params = ["integer", "num", "boolean", "string", "null", "array", "object"]
+        for json_type in params:
+            jsonpath = "$.number"
+            with self.subTest(jsonpath=jsonpath, json_type=json_type):
+                self.assertRaises(AssertionError, lambda: assert_response_jsonpath_type(jsonpath, json_type))
+
+    def test_assert_response_xpath_type(self):
+        response = """
+        <root attribute="attribute_value">
+          <boolean>False</boolean>
+          <number>1.1</number>
+          <integer>2</integer>
+          <string>abc</string>
+          <empty></empty>
+          <element><branch></branch></element>
+        </root>
+        """
+        data_store.scenario[response_key] = {'body': response.encode()}
+        params = [
+            ("integer", "/root/integer/node()"),
+            ("number", "/root/number/node()"),
+            ("boolean", "/root/boolean/node()"),
+            ("string", "/root/string/node()"),
+            ("empty", "/root/empty/node()"),
+            ("element", "/root/element/branch"),
+            ("attribute", "/root/@attribute")
+        ]
+        for xml_type, xpath in params:
+            with self.subTest(xpath = xpath, xml_type = xml_type):
+                assert_response_xpath_type(xpath, xml_type)
+
+    def test_assert_response_xpath_type__fails(self):
+        response = """
+        <root>
+          <number>1.1</number>
+        </root>
+        """
+        data_store.scenario[response_key] = {'body': response.encode()}
+        params = ["integer", "number", "boolean", "string", "empty", "attribute"]
+        for xml_type in params:
+            xpath = "/root/number"
+            with self.subTest(xpath=xpath, xml_type=xml_type):
+                self.assertRaises(AssertionError, lambda: assert_response_xpath_type(xpath, xml_type))
 
     def test_save_file(self):
         body = b'abc'

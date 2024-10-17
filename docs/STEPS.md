@@ -34,6 +34,8 @@ The following Gauge steps are implemented in this module:
   - [Assert xpath \<xpath> does not contain \<text>](#assert-xpath-xpath-does-not-contain-text)
   - [Assert jsonpath \<jsonpath> = \<json\_value>](#assert-jsonpath-jsonpath--json_value)
   - [Assert xpath \<xpath> = \<xml\_value>](#assert-xpath-xpath--xml_value)
+  - [Assert jsonpath \<jsonpath> type \<type>](#assert-jsonpath-jsonpath-type-type)
+  - [Assert xpath \<xpath> type \<type>](#assert-xpath-xpath-type-type)
   - [Save jsonpath \<jsonpath> as \<key>](#save-jsonpath-jsonpath-as-key)
   - [Save xpath \<xpath> as \<key>](#save-xpath-xpath-as-key)
   - [Save file \<download>](#save-file-download)
@@ -220,6 +222,56 @@ Make sure, that the result of the JSONPath exactly matches the specified value. 
 > \* Assert xpath "//fox/jumps" = "\<over>fence\</over>"
 
 Make sure, that the result of the XPath exactly matches the specified value. The value can be a simple type or a nested XML structure.
+
+## Assert jsonpath \<jsonpath> type \<type>
+
+> \* Assert jsonpath "$.fox" type "object"
+
+Make sure, that the result of the JSONPath is of the specified type. Supported types are:
+
+* boolean
+* number
+* integer
+* string
+* null
+* object
+* array
+
+## Assert xpath \<xpath> type \<type>
+
+> \* Assert xpath "//sum" type "integer"
+
+Make sure, that the result of the XPath is of the specified type.
+Supported types are:
+
+* boolean
+* number
+* integer
+* string
+* empty
+* element
+* attribute
+
+The following example xml snippet clarifies the usage:
+
+```
+<root attribute="attribute_value">
+  <boolean>False</boolean>
+  <number>1.1</number>
+  <integer>2</integer>
+  <string>abc</string>
+  <empty></empty>
+  <element><branch></branch></element>
+</root>
+```
+
+> \* Assert xpath "/root/integer/node()" type "integer"\
+> \* Assert xpath "/root/number/node()" type "number"\
+> \* Assert xpath "/root/boolean/node()" type "boolean"\
+> \* Assert xpath "/root/string/node()" type "string"\
+> \* Assert xpath "/root/empty/node()" type "empty"\
+> \* Assert xpath "/root/element/branch" type "element"\
+> \* Assert xpath "/root/@attribute" type "attribute"
 
 ## Save jsonpath \<jsonpath> as \<key>
 
