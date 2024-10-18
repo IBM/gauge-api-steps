@@ -82,9 +82,14 @@ It is possible to combine the two features. Placeholder substitution takes place
 
 Functional expressions will generate a result during step execution. There are different expressions:
 * UUID generation: `!{uuid}`
-* Time: `!{time}`, `!{time:%Y-%m-%d}`. The time format is optional. If omitted, ISO format will be used. The time format pattern is described in the [Python language documentation](https://docs.python.org/3.10/library/time.html#time.strftime).
-* Load content from text file: `!{file:resources/file.json}` The File must be inside the project directory.
-* Load graphQL from file: `!{gql:resources/file.gql}` or `!{graphql:resources/file.gql}` This will automatically generate the JSON format, that can be used in the request body.
+* Time: `!{time}`, `!{time:%Y-%m-%d}` - The time format is optional. If omitted, ISO format will be used. The time format pattern is described in the [Python language documentation](https://docs.python.org/3.10/library/time.html#time.strftime).
+* Encode Base64: `!{base64:${user}:${password}}` - Encodes the given value into Base64.
+* Encode Base64 in URL-safe mode: `!{base64urlsafe:${value}}` - Encodes the given value into Base64 with `+` and `/` replaced by `-` and `_`.
+* Decode Base64: `!{base64decode:dXNlcjpwYXNz}` - Decodes Base64 back to a string. It can handle standard and URL-safe variants and accepts input without padding.
+* URL-Encode: `!{urlencode:?param one/two?}` - URL-encodes the given value. Spaces will be replaced with `+`.
+* URL-Decode: `!{urldecode:%3Fparam%20one%2Ftwo%3F}` - URL-decodes the given value. `+`-signs will be replaced with spaces.
+* Load content from text file: `!{file:resources/file.json}` - The File must be inside the project directory.
+* Load graphQL from file: `!{gql:resources/file.gql}` or `!{graphql:resources/file.gql}` - This will automatically generate the JSON format, that can be used in the request body.
 
 
 ### Expression Examples
@@ -114,6 +119,16 @@ And also to create new properties from old:
 > \* Print "!{time}"
 
 > \* Print "!{time:%Y-%m-%d}"
+
+> \* Print "!{base64:user:password}"
+
+> \* Print "!{base64urlsafe:param one}"
+
+> \* Print "!{base64decode:dXNlcjpwYXNz}"
+
+> \* Print "!{urlencode:?param one/two?}"
+
+> \* Print "!{urldecode:%3Fparam%20one%2Ftwo%3F}"
 
 > \* With body "!{file:resources/request.json}"
 

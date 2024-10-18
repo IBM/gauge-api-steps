@@ -7,8 +7,8 @@ The following Gauge steps are implemented in this module:
 
   - [Response CSRF header \<header>](#response-csrf-header-header)
   - [Request CSRF header \<header>](#request-csrf-header-header)
-  - [Base64-encode \<text> as \<placeholder>](#base64-encode-text-as-placeholder)
-  - [Base64-decode \<text> as \<placeholder>](#base64-decode-text-as-placeholder)
+  - [Base64-encode \<text> as \<placeholder>](#base64-encode-text-as-placeholder) (Deprecated)
+  - [Base64-decode \<text> as \<placeholder>](#base64-decode-text-as-placeholder) (Deprecated)
   - [Store \<key> \<value>](#Store-key-value)
   - [Load from file \<file> as \<placeholder>](#load-from-file-file-as-placeholder)
   - [Print \<message>](#print-message)
@@ -57,11 +57,15 @@ A typical header for CSRF tokens is `X-CSRF-TOKEN`.
 
 ## Base64-encode \<text> as \<placeholder>
 
+**Deprecated in favor of [parameter expressions](../README.md#functional-expressions)**
+
 > \* Base64-encode "login-user" as "username64"
 
 This will encode the string `login-user` to base64 and store it in the placeholder `username64`.
 
 ## Base64-decode \<text> as \<placeholder>
+
+**Deprecated in favor of [parameter expressions](../README.md#functional-expressions)**
 
 > \* Base64-decode "bG9naW4tdXNlcg==" as "username"
 
