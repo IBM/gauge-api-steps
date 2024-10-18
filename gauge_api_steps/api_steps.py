@@ -422,6 +422,7 @@ def save_file(download_param) -> None:
 
 @step("Base64-encode <text> as <placeholder>")
 def base64_encode(text_param: str, placeholder_param: str) -> None:
+    print_and_report('Deprecated Step: Use placeholder substitutions like "!{base64:text}" or "!{base64urlsafe:text}" directly in Step parameters')
     text = substitute(text_param)
     placeholder = substitute(placeholder_param)
     bytesEncoded = text.encode()
@@ -432,6 +433,7 @@ def base64_encode(text_param: str, placeholder_param: str) -> None:
 
 @step("Base64-decode <text> as <placeholder>")
 def base64_decode(text_param: str, placeholder_param: str) -> None:
+    print_and_report('Deprecated Step: Use placeholder substitutions like "!{base64:text}" or "!{base64urlsafe:text}" directly in Step parameters')
     text = substitute(text_param)
     placeholder = substitute(placeholder_param)
     encodedText = text.encode()

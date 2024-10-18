@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 
+import base64
 import json
 import numexpr
 import os
@@ -13,6 +14,7 @@ from getgauge.python import data_store
 from numpy import array2string
 from string import Template
 from typing import Callable
+from urllib import parse as urlcodec
 from .file_util import assert_file_is_in_project
 from .session import session_properties
 
@@ -72,6 +74,16 @@ def _evaluate_expression(expression: str) -> str:
         return str(uuid.uuid4())
     elif cmd == "time":
         return _evaluate_time(value)
+    elif cmd == "base64":
+        return _base64(value)
+    elif cmd == "base64urlsafe":
+        return _base64_urlsafe(value)
+    elif cmd == "base64decode":
+        return _base64_decode(value)
+    elif cmd == "urlencode":
+        return urlcodec.quote_plus(value)
+    elif cmd == "urldecode":
+        return urlcodec.unquote_plus(value)
     elif cmd == "file":
         return _evaluate_file(value)
     elif cmd in ("gql", "graphql"):
@@ -85,6 +97,28 @@ def _evaluate_time(format: str) -> str:
         return datetime.now().isoformat()
     else:
         return datetime.now().strftime(format)
+
+
+def _base64(text: str) -> str:
+    text_bytes = text.encode()
+    text_base64_bytes = base64.b64encode(text_bytes)
+    return text_base64_bytes.decode()
+
+
+def _base64_urlsafe(text: str) -> str:
+    text_bytes = text.encode()
+    text_base64_bytes = base64.urlsafe_b64encode(text_bytes)
+    return text_base64_bytes.decode()
+
+
+def _base64_decode(value: str) -> str:
+    """This will decode base64 in standard and URL-safe mode, with or without padding."""
+    padding_length = 4 - len(value) % 4
+    padding_length = 0 if padding_length == 4 else padding_length
+    value = value + padding_length * '='
+    value = value.replace('-', '+').replace('_', '/')
+    text_bytes = base64.b64decode(value)
+    return text_bytes.decode()
 
 
 def _evaluate_file(file_name: str) -> str:
