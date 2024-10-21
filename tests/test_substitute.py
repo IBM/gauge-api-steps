@@ -73,6 +73,26 @@ class TestSubstitute(unittest.TestCase):
     def test_substitute_raises_with_invalid_time(self):
         self.assertRaises(ValueError, lambda: substitute("!{time-ly}"))
 
+    def test_substitute_with_base64(self):
+        result = substitute("!{base64:Lorem ipsum dolor sit amet, consectetur adipisici elit..}")
+        self.assertEqual("TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2ljaSBlbGl0Li4=", result)
+
+    def test_substitute_with_base64urlsafe(self):
+        result = substitute("!{base64urlsafe:Lorem ipsum dolor sit amet, consectetur adipisici elit..}")
+        self.assertEqual("TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2ljaSBlbGl0Li4=", result)
+
+    def test_substitute_base64decode(self):
+        result = substitute("!{base64decode:TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2ljaSBlbGl0Li4}")
+        self.assertEqual("Lorem ipsum dolor sit amet, consectetur adipisici elit..", result)
+
+    def test_substitute_urlencode(self):
+        result = substitute("!{urlencode:a b + c ! / % ? &}")
+        self.assertEqual("a+b+%2B+c+%21+%2F+%25+%3F+%26", result)
+
+    def test_substitute_urldecode(self):
+        result = substitute("!{urldecode:a+b+%2B+c+%21+%2F+%25+%3F+%26}")
+        self.assertEqual("a b + c ! / % ? &", result)
+
     def test_substitute_raises_with_invalid_expression(self):
         self.assertRaises(ValueError, lambda: substitute("!{nonexistent}"))
 
