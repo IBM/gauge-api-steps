@@ -18,7 +18,7 @@ from io import BytesIO
 from jsonpath_ng.ext import parse as parse_json_path
 from lxml import etree
 from typing import Any, Iterable
-from urllib.request import HTTPCookieProcessor, OpenerDirector, Request, build_opener
+from urllib.request import HTTPCookieProcessor, HTTPRedirectHandler, OpenerDirector, Request, build_opener
 from urllib.error import HTTPError
 from .file_util import assert_file_is_in_project
 from .reporting import print_and_report, report_request_info, report_response_info
@@ -41,7 +41,18 @@ def beforescenario(context: ExecutionContext) -> None:
     session_file_param = os.environ.get("session_properties", "env/default/session.properties")
     session_file = substitute(session_file_param)
     load_session_properties(session_file)
-    opener: OpenerDirector = build_opener(HTTPCookieProcessor())
+    class DynamicRedirectHandler(HTTPRedirectHandler):
+
+        def http_error_302(self, req, fp, code, msg, headers):
+            # the property can be changed within a scenario, so both os.environ and data_store need to be considered.
+            env_follow = os.environ.get("follow_redirects", "false")
+            follow_redirects = data_store.scenario.get("follow_redirects", env_follow).lower() in ("true", "1")
+            if follow_redirects:
+                return super().http_error_302(req, fp, code, msg, headers)
+            else:
+                raise HTTPError(req.full_url, code, msg, headers, fp)
+        http_error_301 = http_error_303 = http_error_307 = http_error_302
+    opener: OpenerDirector = build_opener(HTTPCookieProcessor(), DynamicRedirectHandler())
     data_store.scenario[opener_key] = opener
 
 
@@ -63,11 +74,18 @@ def req_csrf_header(header_param: str) -> None:
     data_store.scenario[request_csrf_header_key] = req_csrf_header
 
 
-@step("Store <key> <value>")
-def store(key_param: str, value_param: str) -> None:
+@step(["Store <key> <value>", "Store <key> = <value> in session"])
+def store_in_session_step(key_param: str, value_param: str) -> None:
     key = substitute(key_param)
     value = substitute(value_param)
     store_in_session(key, value)
+
+
+@step("Store <key> = <value> in scenario")
+def store_in_scenario(key_param: str, value_param: str) -> None:
+    key = substitute(key_param)
+    value = substitute(value_param)
+    data_store.scenario[key] = value
 
 
 @step("Load from file <file> as <placeholder>")
@@ -191,6 +209,9 @@ def make_request(method_param: str, url_param: str) -> None:
                 if h[0] == resp_csrf_header:
                     store_in_session(csrf_value_key, h[1])
                     break
+        if hasattr(req, 'redirect_dict'):
+            redirects_count = json.dumps(req.redirect_dict, indent=4)
+            print_and_report(f"Redirections count (not in order): {redirects_count}")
 
 
 @step("Assert status <status_code>")

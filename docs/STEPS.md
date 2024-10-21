@@ -9,7 +9,9 @@ The following Gauge steps are implemented in this module:
   - [Request CSRF header \<header>](#request-csrf-header-header)
   - [Base64-encode \<text> as \<placeholder>](#base64-encode-text-as-placeholder) (Deprecated)
   - [Base64-decode \<text> as \<placeholder>](#base64-decode-text-as-placeholder) (Deprecated)
-  - [Store \<key> \<value>](#Store-key-value)
+  - [Store \<key> \<value>](#store-key-value) (Deprecated)
+  - [Store \<key> = \<value> in session](#store-key--value-in-session)
+  - [Store \<key> = \<value> in scenario](#store-key--value-in-scenario)
   - [Load from file \<file> as \<placeholder>](#load-from-file-file-as-placeholder)
   - [Print \<message>](#print-message)
   - [Pretty print \<json>](#pretty-print-json)
@@ -73,9 +75,26 @@ This will decode the base64 encoded string `bG9naW4tdXNlcg==` back to `login-use
 
 ## Store \<key> \<value>
 
+**Deprecated in favor of [Store \<key> = \<value> in session](#store-key--value-in-session)**
+
 > \* Store "url" "\${domain}\${path}"
 
 Store a placeholder value for later use. This can also be used to concatenate other placeholders, like values from API responses.
+
+## Store \<key> = \<value> in session
+
+> \* Store "url" "\${domain}\${path}" in session
+
+Store a placeholder value for later use. This can also be used to concatenate other placeholders, like values from API responses.
+The value will be stored over multiple test runs in the `session.properties` file.
+Also see `session_properties` placeholder in [Config](../docs/CONFIG.md).
+
+## Store \<key> = \<value> in scenario
+
+> \* Store "follow_redirects" "True" in scenario
+
+Store a placeholder value for later use in the same scenario. This can also be used to concatenate other placeholders, like values from API responses.
+Unlike [Store \<key> \<value> in session](#store-key--value-in-scenario), the value will only be stored for the duration of the current scenario.
 
 ## Load from file \<file> as \<placeholder>
 
