@@ -41,15 +41,18 @@ def beforescenario(context: ExecutionContext) -> None:
     session_file_param = os.environ.get("session_properties", "env/default/session.properties")
     session_file = substitute(session_file_param)
     load_session_properties(session_file)
-    handlers = [HTTPCookieProcessor()]
-    follow_redirects = os.environ.get("follow_redirects", "false").lower() in ("true", "1")
-    if not follow_redirects:
-        class NoRedirectHandler(HTTPRedirectHandler):
-            def http_error_301(self, req, fp, code, msg, headers):
+    class DynamicRedirectHandler(HTTPRedirectHandler):
+
+        def http_error_302(self, req, fp, code, msg, headers):
+            # the property can be changed within a scenario, so both os.environ and data_store need to be considered.
+            env_follow = os.environ.get("follow_redirects", "false")
+            follow_redirects = data_store.scenario.get("follow_redirects", env_follow).lower() in ("true", "1")
+            if follow_redirects:
+                return super().http_error_302(req, fp, code, msg, headers)
+            else:
                 raise HTTPError(req.full_url, code, msg, headers, fp)
-            http_error_302 = http_error_303 = http_error_307 = http_error_301
-        handlers.append(NoRedirectHandler())
-    opener: OpenerDirector = build_opener(*handlers)
+        http_error_301 = http_error_303 = http_error_307 = http_error_302
+    opener: OpenerDirector = build_opener(HTTPCookieProcessor(), DynamicRedirectHandler())
     data_store.scenario[opener_key] = opener
 
 
@@ -71,11 +74,18 @@ def req_csrf_header(header_param: str) -> None:
     data_store.scenario[request_csrf_header_key] = req_csrf_header
 
 
-@step("Store <key> <value>")
+@step(["Store <key> <value>", "Store <key> = <value> in session"])
 def store(key_param: str, value_param: str) -> None:
     key = substitute(key_param)
     value = substitute(value_param)
     store_in_session(key, value)
+
+
+@step("Store <key> = <value> in scenario")
+def store(key_param: str, value_param: str) -> None:
+    key = substitute(key_param)
+    value = substitute(value_param)
+    data_store.scenario[key] = value
 
 
 @step("Load from file <file> as <placeholder>")
@@ -200,7 +210,8 @@ def make_request(method_param: str, url_param: str) -> None:
                     store_in_session(csrf_value_key, h[1])
                     break
         if hasattr(req, 'redirect_dict'):
-            print_and_report(f"Redirections count (not in order): {req.redirect_dict}")
+            redirects_count = json.dumps(req.redirect_dict, indent=4)
+            print_and_report(f"Redirections count (not in order): {redirects_count}")
 
 
 @step("Assert status <status_code>")
