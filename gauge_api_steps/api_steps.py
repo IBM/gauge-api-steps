@@ -75,14 +75,14 @@ def req_csrf_header(header_param: str) -> None:
 
 
 @step(["Store <key> <value>", "Store <key> = <value> in session"])
-def store(key_param: str, value_param: str) -> None:
+def store_in_session_step(key_param: str, value_param: str) -> None:
     key = substitute(key_param)
     value = substitute(value_param)
     store_in_session(key, value)
 
 
 @step("Store <key> = <value> in scenario")
-def store(key_param: str, value_param: str) -> None:
+def store_in_scenario(key_param: str, value_param: str) -> None:
     key = substitute(key_param)
     value = substitute(value_param)
     data_store.scenario[key] = value
