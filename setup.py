@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='gauge-api-steps',
-    version='0.20',
+    version='0.21',
     description='Provides steps for a Gauge project, that runs tests against APIs',
     long_description=long_description,
     long_description_content_type='text/markdown',
