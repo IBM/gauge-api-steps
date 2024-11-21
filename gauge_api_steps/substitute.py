@@ -66,7 +66,7 @@ def _substitute_expressions(marker_char: str, text: str, evaluator: Callable[[st
 
 def _evaluate_expression(expression: str) -> str:
     if ":" in expression:
-        (cmd, value) = expression.split(':', 2)
+        (cmd, value) = expression.split(':', 1)
     else:
         (cmd, value) = (expression, None)
     cmd = cmd.lower()
