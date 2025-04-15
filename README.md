@@ -1,7 +1,7 @@
 # Gauge API Steps
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENCE)
-[![Python 3.10](https://img.shields.io/badge/Python-3.10-blue.svg?logo=python&logoColor=white)](https://www.python.org/downloads/release/python-31012/)
+[![Python 3.13](https://img.shields.io/badge/Python-3.13-blue.svg?logo=python&logoColor=white)](https://www.python.org/downloads/release/python-3130/)
 [![Gauge](https://img.shields.io/badge/Framework-Gauge-blue)](https://github.com/getgauge)
 [![XPath](https://img.shields.io/badge/XPath-blue)](https://www.w3schools.com/xml/xpath_syntax.asp)
 [![JSONPath](https://img.shields.io/badge/JSONPath-blue)](https://github.com/h2non/jsonpath-ng)
@@ -23,37 +23,51 @@ Find the documentation on all Gauge steps of this project in the overview:
 
 This is a library for the Gauge framework, so Gauge+Python must be installed first.
 
-* Install Python >= 3.10 on your platform and make it available in the \$PATH
+* Install Python >= 3.13 on your platform and make it available in the \$PATH
 * Install [Gauge](https://docs.gauge.org/getting_started/installing-gauge.html?language=python&ide=vscode) and [create a test project with Python](https://docs.gauge.org/getting_started/create-test-project.html?os=macos&language=python&ide=vscode)
 
 It is useful to understand the basic workings of Gauge first. The [documentation](https://docs.gauge.org/?os=macos&language=python&ide=vscode) is excellent.
 
 * Install [this module](#installation)
-* Find out the path to this module after installation:
-  ```shell
-  echo $( python -m site --user-site )/gauge_api_steps
-  ```
+* Install the [gauge-web-app-steps](#installation) module
+* Find out the path to this module after installation:\
+  It should be in `<project>/virtualenvironment/lib/python/site-packages/gauge_api_steps`
 * Add that path to the property `STEP_IMPL_DIR` inside the test project file `env/default/python.properties`. Paths to multiple modules are comma separated.\
   Example on a Mac:
   ```
-  STEP_IMPL_DIR = /Users/<user>/Library/Python/3.10/lib/python/site-packages/gauge_api_steps, step_impl
+  STEP_IMPL_DIR = /<gauge-project-path>/virtualenvironment/lib/python/site-packages/gauge_api_steps, step_impl
   ```
-* Reload Visual Studio Code
+* Restart Visual Studio Code
 * Write a new scenario in `specs/example.spec`. VSC offers **auto-completion**
 
 ## Installation
 
-This module can be installed from source:
+First, create a virtual environment in your Gauge project directory.
+
+```shell
+cd <project>
+python -m venv virtualenvironment
+source virtualenvironment/bin/activate
+```
+
+The Gauge module loader does not like dots `.` in directories, so a link must be created in the virtual environment for the python packages:
+
+```shell
+cd <project>/virtualenvironment
+ln -sf python3.13 python
+```
+
+Afterwards, the latest version can be downloaded and installed from [PyPi](https://pypi.org/project/gauge-api-steps/):
+
+```shell
+pip install gauge-api-steps --upgrade
+```
+
+Alternatively, it can also be installed from source:
 
 ```shell
 cd path/to/gauge-api-steps
-pip install --user .
-```
-
-Or the latest package can be downloaded and installed from [PyPi](https://pypi.org/project/gauge-api-steps):
-
-```shell
-pip install gauge-api-steps --user --upgrade
+pip install .
 ```
 
 ## Development
@@ -65,6 +79,13 @@ python -m unittest discover -v -s tests/ -p 'test_*.py'
 ```
 
 [Contributions are welcome](./docs/CONTRIBUTING.md).
+
+## Configuration
+
+The Configuration follows the [Gauge configuration](https://docs.gauge.org/configuration.html?os=linux&language=python&ide=vscode) approach.
+A lot of behaviour, including redirect rules, logging, and secret masking, can be determined with properties.
+
+[Configuration Overview](./docs/CONFIG.md)
 
 ## Expressions in Parameters
 
@@ -149,13 +170,6 @@ Following placeholders are used internally to store data over multiple steps:
 * \_headers
 
 It is possible to access and manipulate them with certain steps.
-
-## Configuration
-
-The Configuration follows the [Gauge configuration](https://docs.gauge.org/configuration.html?os=linux&language=python&ide=vscode) approach.
-Some behaviour can be determined with properties.
-
-[Configuration Overview](./docs/CONFIG.md)
 
 ## Maintainers
 
