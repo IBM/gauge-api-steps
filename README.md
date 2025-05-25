@@ -35,7 +35,7 @@ It is useful to understand the basic workings of Gauge first. The [documentation
 * Add that path to the property `STEP_IMPL_DIR` inside the test project file `env/default/python.properties`. Paths to multiple modules are comma separated.\
   Example on a Mac:
   ```
-  STEP_IMPL_DIR = /<gauge-project-path>/virtualenvironment/lib/python/site-packages/gauge_api_steps, step_impl
+  STEP_IMPL_DIR = /Users/<user>/gauge-project/virtualenvironment/lib/python/site-packages/gauge_api_steps, step_impl
   ```
 * Restart Visual Studio Code
 * Write a new scenario in `specs/example.spec`. VSC offers **auto-completion**
