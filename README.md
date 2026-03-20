@@ -110,7 +110,8 @@ Functional expressions will generate a result during step execution. There are d
 * URL-Encode: `!{urlencode:?param one/two?}` - URL-encodes the given value. Spaces will be replaced with `+`.
 * URL-Decode: `!{urldecode:%3Fparam%20one%2Ftwo%3F}` - URL-decodes the given value. `+`-signs will be replaced with spaces.
 * Load content from text file: `!{file:resources/file.json}` - The File must be inside the project directory.
-* Load graphQL from file: `!{gql:resources/file.gql}` or `!{graphql:resources/file.gql}` - This will automatically generate the JSON format, that can be used in the request body.
+* Load graphQL from files: `!{gql:resources/query.gql}` or `!{graphql:resources/query.gql}` - This will automatically generate the JSON format, that can be used in the request body.
+  * Variables and operation name is also supported. Values are colon-separated like so: `!{gql:resources/query.gql:resources/vars.gql:my-operation}`
 
 
 ### Expression Examples
@@ -156,6 +157,10 @@ And also to create new properties from old:
 > \* With body "!{file:resources/request.xml}"
 
 > \* With body "!{gql:resources/request.gql}"
+
+> \* With body "!{gql:resources/request.gql:resources/variables.gql}"
+
+> \* With body "!{gql:resources/request.gql:resources/variables.gql:operation-name}"
 
 ### Internal Placeholders
 

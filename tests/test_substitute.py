@@ -105,14 +105,35 @@ class TestSubstitute(unittest.TestCase):
     def test_substitute_with_file_outside_project(self):
         self.assertRaises(AssertionError, lambda: substitute("!{file:/root/file.txt}"))
 
-    def test_substitute_with_gql(self):
-        test_file = f"{TEST_RESOURCES_DIR}/file.gql"
-        param = "!{gql:{test_file}}".replace("{test_file}", test_file)
+    def test_substitute_with_gql_query(self):
+        query_file = f"{TEST_RESOURCES_DIR}/query.gql"
+        param = "!{gql:{query_file}}"\
+            .replace("{query_file}", query_file)
         result = substitute(param)
-        self.assertEqual('{"query": "query ExampleQuery {\\n  find {\\n    me\\n  }\\n}\\n"}', result)
+        self.assertEqual('{"query": "query ExampleQuery ($var: String!) {\\n  find (var: $var) {\\n    me\\n  }\\n}\\n"}', result)
+
+    def test_substitute_with_gql_query_variables(self):
+        query_file = f"{TEST_RESOURCES_DIR}/query.gql"
+        variables_file = f"{TEST_RESOURCES_DIR}/variables.gql"
+        param = "!{gql:{query_file}:{variables_file}}"\
+            .replace("{query_file}", query_file)\
+            .replace("{variables_file}", variables_file)
+        result = substitute(param)
+        self.assertEqual('{"query": "query ExampleQuery ($var: String!) {\\n  find (var: $var) {\\n    me\\n  }\\n}\\n", "variables": {"var": "value"}}', result)
+
+    def test_substitute_with_gql_query_variables_operation(self):
+        query_file = f"{TEST_RESOURCES_DIR}/query.gql"
+        variables_file = f"{TEST_RESOURCES_DIR}/variables.gql"
+        operation_name = "operation-name"
+        param = "!{gql:{query_file}:{variables_file}:{operation_name}}"\
+            .replace("{query_file}", query_file)\
+            .replace("{variables_file}", variables_file)\
+            .replace("{operation_name}", operation_name)
+        result = substitute(param)
+        self.assertEqual('{"query": "query ExampleQuery ($var: String!) {\\n  find (var: $var) {\\n    me\\n  }\\n}\\n", "variables": {"var": "value"}, "operationName": "operation-name"}', result)
 
     def test_substitute_with_gql_outside_project(self):
-        self.assertRaises(AssertionError, lambda: substitute("!{gql:/root/file.gql}"))
+        self.assertRaises(AssertionError, lambda: substitute("!{gql:/root/query.gql}"))
 
     def test_substitute_order_with_source_data_store(self):
         data_store.scenario["param"] = "data-store"

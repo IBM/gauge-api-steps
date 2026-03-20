@@ -127,8 +127,18 @@ def _evaluate_file(file_name: str) -> str:
         return f.read()
 
 
-def _evaluate_gql(file_name: str) -> str:
-    gql = _evaluate_file(file_name)
+def _evaluate_gql(value: str) -> str:
+    values = value.split(':')
+    query_file = values[0]
     gql_json = json.loads("{}")
-    gql_json["query"] = gql
+    gql_query = _evaluate_file(query_file)
+    gql_json["query"] = gql_query
+    if len(values) > 1:
+        variables_file = values[1]
+        gql_variables = _evaluate_file(variables_file)
+        gql_variables_json = json.loads(gql_variables)
+        gql_json["variables"] = gql_variables_json
+    if len(values) > 2:
+        operation_name = values[2]
+        gql_json["operationName"] = operation_name
     return json.dumps(gql_json)
