@@ -28,8 +28,7 @@ This is a library for the Gauge framework, so Gauge+Python must be installed fir
 
 It is useful to understand the basic workings of Gauge first. The [documentation](https://docs.gauge.org/?os=macos&language=python&ide=vscode) is excellent.
 
-* Install [this module](#installation)
-* Install the [gauge-web-app-steps](https://github.com/IBM/gauge-web-app-steps/#installation) module
+* Install the [gauge-api-steps](#installation) module
 * Find out the path to this module after installation:\
   It should be in `<project>/virtualenvironment/lib/python/site-packages/gauge_api_steps`
 * Add that path to the property `STEP_IMPL_DIR` inside the test project file `env/default/python.properties`. Paths to multiple modules are comma separated.\
