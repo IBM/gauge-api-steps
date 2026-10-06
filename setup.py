@@ -20,7 +20,7 @@ setup(
     packages=['gauge_api_steps'],
     install_requires=[
         'diff-match-patch==20241021',
-        'getgauge>=0.5.0',
+        'getgauge==0.5.1',
         'jsonpath-ng==1.8.0',
         'lxml==6.1.0',
         'numexpr==2.14.1',
