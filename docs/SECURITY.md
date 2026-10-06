@@ -6,7 +6,7 @@ Please always update to the latest version, as we do not currently maintain mult
 
 ## Reporting a Vulnerability
 
-To report a security vulnerability, please contact a project maintainer via their profile listed in [MAINTAINERS](./MAINTAINERS.md) with a description of the vulnerability, the steps you took to create the issue, affected versions, and if known, mitigations for the issue.
+To report a security vulnerability, please send an email to [tobias.lehmann@ibm.com](mailto:tobias.lehmann@ibm.com) or contact the project maintainers listed in [MAINTAINERS](./MAINTAINERS.md) (or open a private security advisory at https://github.com/IBM/gauge-api-steps/security/advisories) with a description of the vulnerability, the steps to reproduce the issue, affected versions, and any known mitigations.
 
 ## Vulnerability Disclosure and Remediation
 
