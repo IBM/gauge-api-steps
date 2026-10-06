@@ -6,8 +6,8 @@
 import os
 
 from getgauge.python import data_store
-from .file_util import assert_file_is_in_project
 
+from .file_util import assert_file_is_in_project
 
 session_changed_key = "_session_changed"
 session_file_key = "_session_file"
@@ -21,7 +21,7 @@ def load_session_properties(session_file: str) -> None:
     if not os.path.exists(session_file_path):
         return
     with open(session_file_path) as s:
-        for line in s.readlines():
+        for line in s:
             split = line.split("=", 1)
             key = split[0].strip()
             value = _decode_value(split[1].strip()) if len(split) >= 2 else None

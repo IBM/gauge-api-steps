@@ -7,17 +7,33 @@ import contextlib
 import io
 import os
 import unittest
+from unittest.mock import Mock, mock_open, patch
 
 from colorama import Fore
 from getgauge.python import data_store
-from unittest.mock import Mock, mock_open, patch
-from tests import TEST_DIR, TEST_RESOURCES_DIR, TEST_OUT_DIR
+
 from gauge_api_steps.api_steps import (
-    opener_key, body_key, response_key, sent_request_headers_key,
-    add_body, append_to_file, assert_response_jsonpath_equals, assert_response_jsonpath_type, assert_response_xpath_type,
-    base64_decode, base64_encode, beforescenario, load_from_file, pretty_print, print_headers, print_status, print_body,
-    save_file, simulate_response,
+    add_body,
+    append_to_file,
+    assert_response_jsonpath_equals,
+    assert_response_jsonpath_type,
+    assert_response_xpath_type,
+    base64_decode,
+    base64_encode,
+    beforescenario,
+    body_key,
+    load_from_file,
+    opener_key,
+    pretty_print,
+    print_body,
+    print_headers,
+    print_status,
+    response_key,
+    save_file,
+    sent_request_headers_key,
+    simulate_response,
 )
+from tests import TEST_DIR, TEST_OUT_DIR, TEST_RESOURCES_DIR
 
 
 class TestApiSteps(unittest.TestCase):
@@ -85,7 +101,7 @@ class TestApiSteps(unittest.TestCase):
             self.assertEqual('Response status:\n\n    200\n', result)
 
     def test_print_body(self):
-        data_store.scenario.setdefault(response_key, {})["body"] = '{"a": "b", "c": 1}'.encode()
+        data_store.scenario.setdefault(response_key, {})["body"] = b'{"a": "b", "c": 1}'
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
             print_body()
             result = buf.getvalue()
@@ -97,7 +113,7 @@ class TestApiSteps(unittest.TestCase):
         assert_response_jsonpath_equals("$", json_str)
 
     def test_assert_response_jsonpath_equals_with_json_str(self):
-        data_store.scenario[response_key] = {'body': '{"a": {"b": "value"}}'.encode()}
+        data_store.scenario[response_key] = {'body': b'{"a": {"b": "value"}}'}
         assert_response_jsonpath_equals("$.a.b", '"value"')
 
     def test_assert_response_jsonpath_equals_with_lenient_json_str(self):

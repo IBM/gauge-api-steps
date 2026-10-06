@@ -5,14 +5,20 @@
 
 import os
 import unittest
+from unittest.mock import call, mock_open, patch
 
 from getgauge.python import data_store
-from unittest.mock import call, mock_open, patch
-from tests import TEST_DIR, TEST_RESOURCES_DIR
+
 from gauge_api_steps.session import (
-    session_changed_key, session_file_key, session_keys_key,
-    load_session_properties, save_session_properties, store_in_session, session_properties
+    load_session_properties,
+    save_session_properties,
+    session_changed_key,
+    session_file_key,
+    session_keys_key,
+    session_properties,
+    store_in_session,
 )
+from tests import TEST_DIR, TEST_RESOURCES_DIR
 
 
 class TestSession(unittest.TestCase):

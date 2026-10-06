@@ -4,27 +4,28 @@
 #
 
 import base64
-from types import NoneType
-import numexpr
 import json
 import os
 import re
-
-from colorama import Fore
-from diff_match_patch import diff_match_patch
-from getgauge.python import data_store, step, after_scenario, before_scenario, ExecutionContext
+from collections.abc import Iterable
 from http.client import HTTPResponse
 from io import BytesIO
+from types import NoneType
+from typing import Any
+from urllib.error import HTTPError
+from urllib.request import HTTPCookieProcessor, HTTPRedirectHandler, OpenerDirector, Request, build_opener
+
+import numexpr
+from colorama import Fore
+from diff_match_patch import diff_match_patch
+from getgauge.python import ExecutionContext, after_scenario, before_scenario, data_store, step
 from jsonpath_ng.ext import parse as parse_json_path
 from lxml import etree
-from typing import Any, Iterable
-from urllib.request import HTTPCookieProcessor, HTTPRedirectHandler, OpenerDirector, Request, build_opener
-from urllib.error import HTTPError
+
 from .file_util import assert_file_is_in_project
 from .reporting import print_and_report, report_request_info, report_response_info
 from .session import load_session_properties, save_session_properties, store_in_session
 from .substitute import substitute
-
 
 opener_key = "_opener"
 response_csrf_header_key = "_response_csrf_header"
@@ -489,7 +490,7 @@ def _find_jsonpath_matches_in_response(jsonpath: str) -> Iterable[Any]:
     return match
 
 
-def _diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
+def _diff_json(match_json: bool | float | str | list | dict | None, expected_json: bool | float | str | list | dict | None) -> str:
     match_str = json.dumps(match_json, indent=4, sort_keys=True)
     expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
     dmp = diff_match_patch()
@@ -545,7 +546,7 @@ def _eval_matches_length(matches: int, expr: str) -> None:
         raise AssertionError(f"found {matches} matches, which is not {expr}")
 
 
-def _text_from_xml(match: etree._Element | str | int | float) -> str:
+def _text_from_xml(match: etree._Element | str | float) -> str:
     if isinstance(match, etree._Element):
         return match.xpath('string(.)')
     else:

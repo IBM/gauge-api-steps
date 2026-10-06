@@ -4,13 +4,14 @@
 #
 
 import unittest
+from http.client import HTTPResponse
+from textwrap import dedent
+from unittest.mock import Mock, call, patch
+from urllib.request import Request
 
 from colorama import Fore
-from http.client import HTTPResponse
 from getgauge.registry import MessagesStore
-from textwrap import dedent
-from unittest.mock import call, patch, Mock
-from urllib.request import Request
+
 from gauge_api_steps.reporting import print_and_report, report_request_info, report_response_info
 
 

@@ -5,6 +5,7 @@
 
 import os
 
+
 def assert_file_is_in_project(file_name: str) -> str:
     file_path = os.path.realpath(file_name)
     project_root = os.path.realpath(os.environ.get("GAUGE_PROJECT_ROOT"))

@@ -5,6 +5,7 @@
 
 from .reporting import mask_secrets
 
+
 class MaskedAssertionError(AssertionError):
     """ Make sure that secrets are masked whenever an assertion fails by overwriting AssertionError. """
     def __init__(self, msg):

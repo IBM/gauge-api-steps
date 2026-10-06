@@ -5,16 +5,17 @@
 
 import base64
 import json
-import numexpr
 import os
 import uuid
-
+from collections.abc import Callable
 from datetime import datetime
+from string import Template
+from urllib import parse as urlcodec
+
+import numexpr
 from getgauge.python import data_store
 from numpy import array2string
-from string import Template
-from typing import Callable
-from urllib import parse as urlcodec
+
 from .file_util import assert_file_is_in_project
 from .session import session_properties
 
