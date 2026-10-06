@@ -12,7 +12,7 @@ from urllib.request import Request
 from colorama import Fore
 from getgauge.registry import MessagesStore
 
-from gauge_api_steps.reporting import print_and_report, report_request_info, report_response_info
+from gauge_api_steps.reporting import mask_header, print_and_report, report_request_info, report_response_info
 
 
 class TestReporting(unittest.TestCase):
@@ -45,6 +45,19 @@ class TestReporting(unittest.TestCase):
         expected = "something ******** ******** ******** ********"
         self.assertEqual([call(expected)], mock_print.mock_calls)
         self.assertEqual([expected.replace(' ', '&nbsp;')], MessagesStore.pending_messages())
+
+    def test_mask_header__default_sensitive_headers(self):
+        self.assertEqual("********", mask_header("Authorization", "Bearer token123"))
+        self.assertEqual("********", mask_header("cookie", "session=xyz"))
+        self.assertEqual("********", mask_header("Set-Cookie", "session=xyz; Path=/"))
+        self.assertEqual("********", mask_header("X-Api-Key", "secret-key"))
+        self.assertEqual("image/png", mask_header("Content-Type", "image/png"))
+
+    def test_mask_header__custom_sensitive_headers(self):
+        with patch('os.environ', {"sensitive_headers": "custom-auth, secret-header"}):
+            self.assertEqual("********", mask_header("Custom-Auth", "secret"))
+            self.assertEqual("********", mask_header("secret-header", "value"))
+            self.assertEqual("Bearer token123", mask_header("Authorization", "Bearer token123"))
 
     def test_report_request_info(self):
         req = Request(url="http://localhost", method="POST", headers={"Content-Type": "image/png"}, data=b"abc\ndef")
