@@ -178,3 +178,7 @@ It is possible to access and manipulate them with certain steps.
 ## Maintainers
 
 [Maintainers](./docs/MAINTAINERS.md)
+
+## Security
+
+[Security](./docs/SECURITY.md)

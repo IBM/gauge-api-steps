@@ -5,16 +5,17 @@
 
 import base64
 import json
-import numexpr
 import os
 import uuid
+from collections.abc import Callable
+from datetime import UTC, datetime
+from string import Template
+from urllib import parse as urlcodec
 
-from datetime import datetime
+import numexpr
 from getgauge.python import data_store
 from numpy import array2string
-from string import Template
-from typing import Callable
-from urllib import parse as urlcodec
+
 from .file_util import assert_file_is_in_project
 from .session import session_properties
 
@@ -94,9 +95,9 @@ def _evaluate_expression(expression: str) -> str:
 
 def _evaluate_time(format: str) -> str:
     if format is None:
-        return datetime.now().isoformat()
+        return datetime.now(UTC).isoformat()
     else:
-        return datetime.now().strftime(format)
+        return datetime.now(UTC).strftime(format)
 
 
 def _base64(text: str) -> str:

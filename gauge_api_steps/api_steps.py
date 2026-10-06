@@ -4,27 +4,28 @@
 #
 
 import base64
-from types import NoneType
-import numexpr
 import json
 import os
 import re
-
-from colorama import Fore
-from diff_match_patch import diff_match_patch
-from getgauge.python import data_store, step, after_scenario, before_scenario, ExecutionContext
+from collections.abc import Iterable
 from http.client import HTTPResponse
 from io import BytesIO
+from types import NoneType
+from typing import Any
+from urllib.error import HTTPError
+from urllib.request import HTTPCookieProcessor, HTTPRedirectHandler, OpenerDirector, Request, build_opener
+
+import numexpr
+from colorama import Fore
+from diff_match_patch import diff_match_patch
+from getgauge.python import ExecutionContext, after_scenario, before_scenario, data_store, step
 from jsonpath_ng.ext import parse as parse_json_path
 from lxml import etree
-from typing import Any, Iterable
-from urllib.request import HTTPCookieProcessor, HTTPRedirectHandler, OpenerDirector, Request, build_opener
-from urllib.error import HTTPError
+
 from .file_util import assert_file_is_in_project
 from .reporting import print_and_report, report_request_info, report_response_info
 from .session import load_session_properties, save_session_properties, store_in_session
 from .substitute import substitute
-
 
 opener_key = "_opener"
 response_csrf_header_key = "_response_csrf_header"
@@ -175,7 +176,7 @@ def add_body(body_param: str) -> None:
 @step("Simulate response body: <value>")
 def simulate_response(body_param: str) -> None:
     body = substitute(body_param)
-    data_store.scenario.setdefault(response_key, dict())["body"] = body.encode()
+    data_store.scenario.setdefault(response_key, {})["body"] = body.encode()
 
 
 @step("Request <method> <url>")
@@ -319,8 +320,8 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
     jsonpath = substitute(jsonpath_param)
     value = substitute(json_value_param)
     match = _find_jsonpath_match_in_response(jsonpath)
-    if os.environ.get("lenient_json_str_comparison", "false").lower() in ("true", "1"):
-        if (not value.strip().startswith(('[', '{', '"',))) and (not is_numeric(value.strip())) and (value.strip() not in ('null','true','false',)):
+    if os.environ.get("lenient_json_str_comparison", "false").lower() in ("true", "1") \
+        and (not value.strip().startswith(('[', '{', '"',))) and (not is_numeric(value.strip())) and (value.strip() not in ('null','true','false',)):
             value  = f'"{value}"'
     value_json = json.loads(value)
     if match != value_json:
@@ -369,7 +370,7 @@ def assert_response_jsonpath_type(jsonpath_param: str, json_type_param: str) -> 
         actual_type = type(match).__name__
         match_str = json.dumps(match)
         match_str_short = match_str[0:60] if len(match_str) <= 60 else f"{match_str[0:60]}..."
-        raise AssertionError(f"Assertion failed: {match_str_short} is of type {actual_type}, not {json_type}")
+        raise AssertionError(f"Assertion failed: {match_str_short} is of type {actual_type}, not {json_type}") # noqa: TRY004
 
 
 @step("Assert xpath <xpath> type <type>")
@@ -489,7 +490,7 @@ def _find_jsonpath_matches_in_response(jsonpath: str) -> Iterable[Any]:
     return match
 
 
-def _diff_json(match_json: bool|int|float|str|list|dict|None, expected_json: bool|int|float|str|list|dict|None) -> str:
+def _diff_json(match_json: bool | float | str | list | dict | None, expected_json: bool | float | str | list | dict | None) -> str:
     match_str = json.dumps(match_json, indent=4, sort_keys=True)
     expected_str = json.dumps(expected_json, indent=4, sort_keys=True)
     dmp = diff_match_patch()
@@ -540,12 +541,12 @@ def _eval_matches_length(matches: int, expr: str) -> None:
     full_expr = f"{matches}{expr}"
     result = numexpr.evaluate(full_expr).tolist()
     if not isinstance(result, bool):
-        raise AssertionError(f"'{full_expr} = {result}' is not a boolean expression")
+        raise AssertionError(f"'{full_expr} = {result}' is not a boolean expression") # noqa: TRY004
     if result is False:
         raise AssertionError(f"found {matches} matches, which is not {expr}")
 
 
-def _text_from_xml(match: etree._Element | str | int | float) -> str:
+def _text_from_xml(match: etree._Element | str | float) -> str:
     if isinstance(match, etree._Element):
         return match.xpath('string(.)')
     else:

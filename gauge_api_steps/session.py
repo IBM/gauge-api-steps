@@ -6,8 +6,8 @@
 import os
 
 from getgauge.python import data_store
-from .file_util import assert_file_is_in_project
 
+from .file_util import assert_file_is_in_project
 
 session_changed_key = "_session_changed"
 session_file_key = "_session_file"
@@ -17,11 +17,11 @@ session_keys_key = "_session_keys"
 def load_session_properties(session_file: str) -> None:
     session_file_path = assert_file_is_in_project(session_file)
     data_store.scenario[session_file_key] = session_file_path
-    data_store.scenario[session_keys_key] = list()
+    data_store.scenario[session_keys_key] = []
     if not os.path.exists(session_file_path):
         return
     with open(session_file_path) as s:
-        for line in s.readlines():
+        for line in s:
             split = line.split("=", 1)
             key = split[0].strip()
             value = _decode_value(split[1].strip()) if len(split) >= 2 else None
@@ -47,13 +47,13 @@ def save_session_properties() -> None:
 def store_in_session(key: str, value: str, changed: bool=True) -> None:
     data_store.scenario[session_changed_key] = changed
     data_store.scenario[key] = value
-    session_keys: list = data_store.scenario.setdefault(session_keys_key, list())
+    session_keys: list = data_store.scenario.setdefault(session_keys_key, [])
     if key not in session_keys:
         session_keys.append(key)
 
 
 def session_properties() -> dict:
-    session_keys: list = data_store.scenario.setdefault(session_keys_key, list())
+    session_keys: list = data_store.scenario.setdefault(session_keys_key, [])
     return {key: data_store.scenario.get(key) for key in session_keys}
 
 

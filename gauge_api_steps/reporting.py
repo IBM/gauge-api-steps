@@ -5,11 +5,11 @@
 
 import os
 import re
-
 from http.client import HTTPResponse, responses
-from getgauge.python import Messages
 from urllib.error import HTTPError
 from urllib.request import Request
+
+from getgauge.python import Messages
 
 
 def report_request_info(req: Request) -> None:

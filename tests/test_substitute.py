@@ -6,9 +6,10 @@
 import os
 import re
 import unittest
-
 from datetime import datetime
+
 from getgauge.python import data_store
+
 from gauge_api_steps.session import store_in_session
 from gauge_api_steps.substitute import substitute
 from tests import TEST_DIR, TEST_RESOURCES_DIR
@@ -30,8 +31,8 @@ class TestSubstitute(unittest.TestCase):
         self.assertEqual("2", result)
 
     def test_substitute_with_inner_math_expression(self):
-        result = substitute("\(^#{0 + 0}^)/")
-        self.assertEqual("\(^0^)/", result)
+        result = substitute(r"\(^#{0 + 0}^)/")
+        self.assertEqual(r"\(^0^)/", result)
 
     def test_substitute_with_two_math_expressions(self):
         result = substitute("#{0 + 0}#{1 + 1}")
