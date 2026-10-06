@@ -41,7 +41,7 @@ class TestApiSteps(unittest.TestCase):
     def setUp(self):
         data_store.scenario.clear()
         self.app_context = Mock()
-        data_store.scenario["_session_keys"] = list()
+        data_store.scenario["_session_keys"] = []
         os.environ["GAUGE_PROJECT_ROOT"] = TEST_DIR
         os.environ["session_properties"] = f"{TEST_DIR}/session.properties"
         if not os.path.exists(TEST_OUT_DIR):
@@ -199,10 +199,10 @@ class TestApiSteps(unittest.TestCase):
         """
         data_store.scenario[response_key] = {'body': response.encode()}
         params = ["integer", "num", "boolean", "string", "null", "array", "object"]
+        jsonpath = "$.number"
         for json_type in params:
-            jsonpath = "$.number"
             with self.subTest(jsonpath=jsonpath, json_type=json_type):
-                self.assertRaises(AssertionError, lambda: assert_response_jsonpath_type(jsonpath, json_type))
+                self.assertRaises(AssertionError, assert_response_jsonpath_type, jsonpath, json_type)
 
     def test_assert_response_xpath_type(self):
         response = """
@@ -240,7 +240,7 @@ class TestApiSteps(unittest.TestCase):
         for xml_type in params:
             xpath = "/root/number"
             with self.subTest(xpath=xpath, xml_type=xml_type):
-                self.assertRaises(AssertionError, lambda: assert_response_xpath_type(xpath, xml_type))
+                self.assertRaises(AssertionError, assert_response_xpath_type, xpath, xml_type)
 
     def test_save_file(self):
         body = b'abc'

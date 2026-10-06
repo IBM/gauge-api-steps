@@ -176,7 +176,7 @@ def add_body(body_param: str) -> None:
 @step("Simulate response body: <value>")
 def simulate_response(body_param: str) -> None:
     body = substitute(body_param)
-    data_store.scenario.setdefault(response_key, dict())["body"] = body.encode()
+    data_store.scenario.setdefault(response_key, {})["body"] = body.encode()
 
 
 @step("Request <method> <url>")
@@ -320,8 +320,8 @@ def assert_response_jsonpath_equals(jsonpath_param: str, json_value_param: str) 
     jsonpath = substitute(jsonpath_param)
     value = substitute(json_value_param)
     match = _find_jsonpath_match_in_response(jsonpath)
-    if os.environ.get("lenient_json_str_comparison", "false").lower() in ("true", "1"):
-        if (not value.strip().startswith(('[', '{', '"',))) and (not is_numeric(value.strip())) and (value.strip() not in ('null','true','false',)):
+    if os.environ.get("lenient_json_str_comparison", "false").lower() in ("true", "1") \
+        and (not value.strip().startswith(('[', '{', '"',))) and (not is_numeric(value.strip())) and (value.strip() not in ('null','true','false',)):
             value  = f'"{value}"'
     value_json = json.loads(value)
     if match != value_json:
@@ -370,7 +370,7 @@ def assert_response_jsonpath_type(jsonpath_param: str, json_type_param: str) -> 
         actual_type = type(match).__name__
         match_str = json.dumps(match)
         match_str_short = match_str[0:60] if len(match_str) <= 60 else f"{match_str[0:60]}..."
-        raise AssertionError(f"Assertion failed: {match_str_short} is of type {actual_type}, not {json_type}")
+        raise AssertionError(f"Assertion failed: {match_str_short} is of type {actual_type}, not {json_type}") # noqa: TRY004
 
 
 @step("Assert xpath <xpath> type <type>")
@@ -541,7 +541,7 @@ def _eval_matches_length(matches: int, expr: str) -> None:
     full_expr = f"{matches}{expr}"
     result = numexpr.evaluate(full_expr).tolist()
     if not isinstance(result, bool):
-        raise AssertionError(f"'{full_expr} = {result}' is not a boolean expression")
+        raise AssertionError(f"'{full_expr} = {result}' is not a boolean expression") # noqa: TRY004
     if result is False:
         raise AssertionError(f"found {matches} matches, which is not {expr}")
 
