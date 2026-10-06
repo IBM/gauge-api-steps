@@ -22,7 +22,7 @@ setup(
         'diff-match-patch==20241021',
         'getgauge>=0.5.0',
         'jsonpath-ng==1.8.0',
-        'lxml==6.0.2',
+        'lxml==6.1.0',
         'numexpr==2.14.1',
         'colorama==0.4.6',
     ],
