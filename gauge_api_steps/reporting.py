@@ -18,7 +18,7 @@ def report_request_info(req: Request) -> None:
         return
     print_and_report(f"> {req.get_method()} {req.get_full_url()}")
     for header_name, header_value in req.header_items():
-        print_and_report(f"> {header_name}: {header_value}")
+        print_and_report(f"> {header_name}: {mask_header(header_name, header_value)}")
     if req.data is not None:
         print_and_report(">")
         print_and_report(f"> {req.data.decode('unicode_escape')}")
@@ -35,7 +35,7 @@ def report_response_info(resp: HTTPResponse|HTTPError, resp_body: bytes) -> None
         return
     print_and_report(f"< {resp.status} {responses.get(resp.status, '')}")
     for header_name, header_value in resp.getheaders():
-        print_and_report(f"< {header_name}: {header_value}")
+        print_and_report(f"< {header_name}: {mask_header(header_name, header_value)}")
     if len(resp_body) > 0:
         print_and_report("<")
         print_and_report(f"< {resp_body.decode('unicode_escape')}")
@@ -58,6 +58,17 @@ def print_and_report(message: str) -> None:
     # Replacing Ansi color codes. Unfortunately, the HTML report cannot handle colors defined by CSS, either
     html_message = re.sub(r'\033\[[0-9]{1,2}m', "", html_message)
     Messages.write_message(html_message)
+
+
+def mask_header(header_name: str, header_value: str) -> str:
+    sensitive_headers_prop = os.environ.get(
+        "sensitive_headers",
+        "authorization,proxy-authorization,cookie,set-cookie,x-api-key,x-auth-token,x-csrf-token",
+    )
+    sensitive_headers = {h.strip().lower() for h in re.split(r'[\s,;]+', sensitive_headers_prop) if h.strip()}
+    if header_name.lower() in sensitive_headers:
+        return '********'
+    return header_value
 
 
 def mask_secrets(message: str) -> str:
